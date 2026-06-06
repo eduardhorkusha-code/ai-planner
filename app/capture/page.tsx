@@ -39,11 +39,12 @@ type WinWithSpeech = Window & {
   webkitSpeechRecognition?: SpeechRecognitionCtor
 }
 
-type ModelKey = "haiku" | "sonnet"
+type ModelKey = "haiku" | "sonnet" | "grok"
 
 const MODEL_OPTIONS: { key: ModelKey; label: string; modelId: string }[] = [
   { key: "haiku",  label: "\u26a1 \u0428\u0432\u0438\u0434\u043a\u043e", modelId: "claude-haiku-4-5" },
   { key: "sonnet", label: "\ud83e\udde0 \u0420\u043e\u0437\u0443\u043c\u043d\u043e", modelId: "claude-sonnet-4-6" },
+  { key: "grok",   label: "\ud83e\udd16 Grok", modelId: "grok" },
 ]
 
 /* SVG: microphone */

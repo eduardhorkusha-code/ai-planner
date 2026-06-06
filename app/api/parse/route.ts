@@ -50,23 +50,12 @@ export async function POST(req: NextRequest) {
     const { dump, model: rawModel } = body as { dump?: unknown; model?: unknown }
     if (!dump || typeof dump !== "string" || !dump.trim()) return NextResponse.json([])
 
-    // Allowlist model — fall back to haiku if unknown
-    const model: string = typeof rawModel === "string" && ALLOWED_MODELS[rawModel]
-      ? ALLOWED_MODELS[rawModel]
-      : DEFAULT_MODEL
-
-    // Replace U+2028/U+2029 (line/paragraph separators) with newline
+    // Replace U+2028/U+2029 with newline, strip control chars
     const safeDump = String(dump)
       .replace(/\u2028/g, "\n")
       .replace(/\u2029/g, "\n")
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
 
-    const apiKey = (process.env.ANTHROPIC_API_KEY ?? "").replace(/[^\x21-\x7E]/g, "")
-    if (!apiKey) {
-      return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 })
-    }
-
-    const client = new Anthropic({ apiKey })
     const today = new Date().toISOString().split("T")[0]
 
     const prompt =
@@ -80,19 +69,93 @@ export async function POST(req: NextRequest) {
       "\u041f\u043e\u0432\u0435\u0440\u043d\u0438 \u0422\u0406\u041b\u042c\u041a\u0418 \u0432\u0430\u043b\u0456\u0434\u043d\u0438\u0439 JSON-\u043c\u0430\u0441\u0438\u0432 \u0431\u0435\u0437 \u0431\u0443\u0434\u044c-\u044f\u043a\u0438\u0445 \u043f\u043e\u044f\u0441\u043d\u0435\u043d\u044c \u0456 \u0431\u0435\u0437 markdown.\n\n" +
       `\u0422\u0435\u043a\u0441\u0442:\n"""\n${safeDump}\n"""`
 
+    // JSON-guard: strip markdown fences, parse, normalise, validate
+    function parseTasksFromText(text: string) {
+      const raw = text.trim()
+      const clean = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim()
+      const parsed = JSON.parse(clean)
+      const rawArr = normalizeToArray(parsed)
+      return rawArr.map(validateTask).filter((t): t is NonNullable<typeof t> => t !== null)
+    }
+
+    // Claude haiku fallback — always available, used when Grok fails or key absent
+    async function claudeHaikuFallback(): Promise<Response> {
+      const apiKey = (process.env.ANTHROPIC_API_KEY ?? "").replace(/[^\x21-\x7E]/g, "")
+      if (!apiKey) return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 })
+      const client = new Anthropic({ apiKey })
+      const message = await client.messages.create({
+        model: DEFAULT_MODEL,
+        max_tokens: 2048,
+        messages: [{ role: "user", content: prompt }],
+      })
+      const tasks = parseTasksFromText((message.content[0] as { text: string }).text)
+      return NextResponse.json(tasks)
+    }
+
+    // Route: Grok branch
+    const isGrok = typeof rawModel === "string" && rawModel === "grok"
+
+    if (isGrok) {
+      const grokKey = (process.env.GROKAPI ?? "").replace(/[^\x21-\x7E]/g, "")
+      if (!grokKey) {
+        // No API key — fall back to haiku silently
+        return await claudeHaikuFallback()
+      }
+
+      // Try models in order; fall through to haiku on any failure
+      const GROK_MODELS = ["grok-3", "grok-2-latest"]
+      for (const grokModel of GROK_MODELS) {
+        try {
+          const xaiRes = await fetch("https://api.x.ai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${grokKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: grokModel,
+              messages: [{ role: "user", content: prompt }],
+              max_tokens: 2048,
+            }),
+          })
+
+          if (!xaiRes.ok) continue
+
+          const xaiData = await xaiRes.json() as { choices?: { message?: { content?: string } }[] }
+          const content = xaiData?.choices?.[0]?.message?.content
+          if (!content) continue
+
+          const tasks = parseTasksFromText(content)
+          return NextResponse.json(tasks)
+        } catch {
+          // network or parse error — try next model
+          continue
+        }
+      }
+
+      // All Grok models failed — fall back to Claude haiku
+      return await claudeHaikuFallback()
+    }
+
+    // Claude path (haiku / sonnet)
+    const model: string = typeof rawModel === "string" && ALLOWED_MODELS[rawModel]
+      ? ALLOWED_MODELS[rawModel]
+      : DEFAULT_MODEL
+
+    const apiKey = (process.env.ANTHROPIC_API_KEY ?? "").replace(/[^\x21-\x7E]/g, "")
+    if (!apiKey) {
+      return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 })
+    }
+
+    const client = new Anthropic({ apiKey })
+
     const message = await client.messages.create({
       model,
       max_tokens: 2048,
       messages: [{ role: "user", content: prompt }],
     })
 
-    const raw = (message.content[0] as { text: string }).text.trim()
-    const clean = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim()
-    const parsed = JSON.parse(clean)
-
-    const rawArr = normalizeToArray(parsed)
-    const tasks = rawArr.map(validateTask).filter((t): t is NonNullable<typeof t> => t !== null)
-
+    const tasks = parseTasksFromText((message.content[0] as { text: string }).text)
     return NextResponse.json(tasks)
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)

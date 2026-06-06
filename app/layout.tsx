@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import TabBar from "./TabBar"
+import Concierge from "./Concierge"
 
 export const metadata: Metadata = {
   title: "AI Planner",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-ios-bg text-white min-h-screen flex flex-col max-w-md mx-auto">
         <main className="flex-1 overflow-y-auto pb-32">{children}</main>
         <TabBar />
+        <Concierge />
       </body>
     </html>
   )
