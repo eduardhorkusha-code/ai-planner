@@ -1,11 +1,19 @@
 "use client"
 import { useEffect, useState } from "react"
-import { getTasks, updateTaskStatus, deleteTask } from "@/lib/store"
+import { getTasks, addTasks, updateTaskStatus, deleteTask } from "@/lib/store"
 import { Task } from "@/lib/types"
 import Link from "next/link"
 
 const PRIORITY_COLOR = { must: "bg-red-900 text-red-300", nice: "bg-gray-800 text-gray-400" }
 const PRIORITY_LABEL = { must: "🔴 Терміново", nice: "⚪ Nice to have" }
+
+const DEMO_TASKS: Task[] = [
+  { id: crypto.randomUUID(), title: "Підготувати слайди для презентації клієнту", priority: "must", estimateMin: 45, deadline: new Date().toISOString().split("T")[0], status: "inbox" },
+  { id: crypto.randomUUID(), title: "Відповісти на email від Марини про договір", priority: "must", estimateMin: 15, deadline: null, status: "inbox" },
+  { id: crypto.randomUUID(), title: "Зателефонувати в банк щодо рахунку", priority: "nice", estimateMin: 20, deadline: null, status: "inbox" },
+  { id: crypto.randomUUID(), title: "Купити каву і молоко після роботи", priority: "nice", estimateMin: 10, deadline: null, status: "inbox" },
+  { id: crypto.randomUUID(), title: "Переглянути PR від Дімка до кінця дня", priority: "must", estimateMin: 30, deadline: new Date().toISOString().split("T")[0], status: "inbox" },
+]
 
 export default function InboxPage() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -24,6 +32,12 @@ export default function InboxPage() {
     setTasks(prev => prev.filter(t => t.id !== id))
   }
 
+  function loadDemo() {
+    const freshDemo: Task[] = DEMO_TASKS.map(t => ({ ...t, id: crypto.randomUUID() }))
+    addTasks(freshDemo)
+    setTasks(freshDemo)
+  }
+
   if (tasks.length === 0) return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
       <div className="text-6xl">📥</div>
@@ -32,6 +46,12 @@ export default function InboxPage() {
       <Link href="/capture" className="bg-blue-600 px-6 py-3 rounded-2xl font-semibold">
         ✏️ Capture
       </Link>
+      <button
+        onClick={loadDemo}
+        className="bg-gray-800 hover:bg-gray-700 text-gray-300 px-6 py-3 rounded-2xl font-semibold transition-colors"
+      >
+        🎭 Завантажити демо
+      </button>
     </div>
   )
 

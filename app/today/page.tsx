@@ -23,6 +23,9 @@ export default function TodayPage() {
 
   const done = tasks.filter(t => t.status === "done").length
   const total = tasks.length
+  const totalMin = tasks.filter(t => t.status === "today").reduce((s, t) => s + t.estimateMin, 0)
+  const hoursLeft = Math.floor(totalMin / 60)
+  const minsLeft = totalMin % 60
 
   if (tasks.length === 0) return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
@@ -45,6 +48,14 @@ export default function TodayPage() {
           style={{ width: total ? `${(done / total) * 100}%` : "0%" }}
         />
       </div>
+      {totalMin > 0 && (
+        <p className="text-gray-400 text-sm">
+          ⏱ ~{hoursLeft > 0 ? `${hoursLeft}год ` : ""}{minsLeft}хв задач залишилось
+        </p>
+      )}
+      {totalMin > 480 && (
+        <p className="text-red-400 text-sm">⚠️ Забагато для одного дня</p>
+      )}
       {tasks.map(t => (
         <button
           key={t.id}
