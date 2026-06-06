@@ -16,14 +16,14 @@ interface Props {
 function Bar({ value, max, label }: { value: number; max: number; label: string }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0
   return (
-    <div className="mb-2">
-      <div className="flex justify-between text-xs text-gray-400 mb-1">
+    <div className="mb-3">
+      <div className="flex justify-between text-ios-caption text-ios-label2 mb-1">
         <span>{label}</span>
         <span>{value}</span>
       </div>
-      <div className="w-full bg-gray-800 rounded-full h-2">
+      <div className="w-full bg-ios-gray3 rounded-full h-2">
         <div
-          className="bg-violet-500 h-2 rounded-full transition-all"
+          className="bg-ios-blue h-2 rounded-full transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -53,11 +53,11 @@ export default async function AdminPage({ searchParams }: Props) {
     const provided = Array.isArray(params.key) ? params.key[0] : params.key
     if (provided !== adminKey) {
       return (
-        <main className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+        <main className="min-h-screen bg-ios-bg flex items-center justify-center p-6">
           <div className="max-w-md w-full text-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-ios-label2 text-ios-footnote">
               Доступ за ключем: додайте{' '}
-              <code className="bg-gray-800 px-1 rounded text-violet-400">?key=...</code>
+              <code className="bg-ios-bg2 px-1 rounded text-ios-blue">?key=...</code>
             </p>
           </div>
         </main>
@@ -69,11 +69,11 @@ export default async function AdminPage({ searchParams }: Props) {
 
   if (!supabase) {
     return (
-      <main className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+      <main className="min-h-screen bg-ios-bg flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center">
-          <p className="text-gray-400 text-sm">
+          <p className="text-ios-label2 text-ios-footnote">
             Supabase не налаштовано (додайте{' '}
-            <code className="bg-gray-800 px-1 rounded text-violet-400">
+            <code className="bg-ios-bg2 px-1 rounded text-ios-blue">
               SUPABASE_SERVICE_ROLE_KEY
             </code>
             )
@@ -91,9 +91,9 @@ export default async function AdminPage({ searchParams }: Props) {
 
   if (error || !rows) {
     return (
-      <main className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+      <main className="min-h-screen bg-ios-bg flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center">
-          <p className="text-red-400 text-sm">Помилка: {error?.message ?? 'немає даних'}</p>
+          <p className="text-ios-red text-ios-footnote">Помилка: {error?.message ?? 'немає даних'}</p>
         </div>
       </main>
     )
@@ -129,52 +129,52 @@ export default async function AdminPage({ searchParams }: Props) {
   const last10 = all.slice(0, 10)
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white p-4">
+    <main className="min-h-screen bg-ios-bg text-ios-label p-4 pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-lg font-semibold tracking-tight">Аналітика воронки</h1>
-          <p className="text-xs text-gray-500 mt-0.5">funnel_responses · AI Planner</p>
+        <div className="mb-6 pt-2">
+          <h1 className="text-ios-title2 text-ios-label tracking-tight">Аналітика воронки</h1>
+          <p className="text-ios-caption text-ios-label3 mt-0.5">funnel_responses · AI Planner</p>
         </div>
 
         {/* Top metrics */}
-        <section className="bg-gray-900 rounded-xl p-4 mb-4">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <section className="bg-ios-bg2 rounded-2xl p-4 mb-4">
+          <h2 className="text-ios-caption text-ios-label3 uppercase tracking-widest mb-3">
             Загальне
           </h2>
-          <div className="text-3xl font-bold text-violet-400">{total}</div>
-          <div className="text-xs text-gray-500 mt-0.5">відповідей у базі</div>
+          <div className="text-ios-title1 text-ios-blue">{total}</div>
+          <div className="text-ios-caption text-ios-label3 mt-0.5">відповідей у базі</div>
         </section>
 
         {/* Funnel levels */}
-        <section className="bg-gray-900 rounded-xl p-4 mb-4">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <section className="bg-ios-bg2 rounded-2xl p-4 mb-4">
+          <h2 className="text-ios-caption text-ios-label3 uppercase tracking-widest mb-3">
             Воронка
           </h2>
           {total === 0 ? (
-            <p className="text-xs text-gray-600">Немає даних</p>
+            <p className="text-ios-footnote text-ios-label3">Немає даних</p>
           ) : (
             <div className="space-y-3">
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-300">Розпочали (всього)</span>
-                  <span className="font-medium">{total} · 100%</span>
+                <div className="flex justify-between text-ios-caption text-ios-label2 mb-1">
+                  <span>Розпочали (всього)</span>
+                  <span>{total} · 100%</span>
                 </div>
-                <div className="w-full bg-gray-800 rounded-full h-2">
-                  <div className="bg-violet-500 h-2 rounded-full" style={{ width: '100%' }} />
+                <div className="w-full bg-ios-gray3 rounded-full h-2">
+                  <div className="bg-ios-blue h-2 rounded-full" style={{ width: '100%' }} />
                 </div>
               </div>
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-300">Крок 2 (persona)</span>
-                  <span className="font-medium">
+                <div className="flex justify-between text-ios-caption text-ios-label2 mb-1">
+                  <span>Крок 2 (persona)</span>
+                  <span>
                     {reachedPersona} ·{' '}
                     {total > 0 ? Math.round((reachedPersona / total) * 100) : 0}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-800 rounded-full h-2">
+                <div className="w-full bg-ios-gray3 rounded-full h-2">
                   <div
-                    className="bg-violet-400 h-2 rounded-full"
+                    className="bg-ios-blue/70 h-2 rounded-full"
                     style={{
                       width: `${total > 0 ? Math.round((reachedPersona / total) * 100) : 0}%`,
                     }}
@@ -182,16 +182,16 @@ export default async function AdminPage({ searchParams }: Props) {
                 </div>
               </div>
               <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-300">Фінал (volume)</span>
-                  <span className="font-medium">
+                <div className="flex justify-between text-ios-caption text-ios-label2 mb-1">
+                  <span>Фінал (volume)</span>
+                  <span>
                     {reachedVolume} ·{' '}
                     {total > 0 ? Math.round((reachedVolume / total) * 100) : 0}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-800 rounded-full h-2">
+                <div className="w-full bg-ios-gray3 rounded-full h-2">
                   <div
-                    className="bg-violet-300 h-2 rounded-full"
+                    className="bg-ios-blue/40 h-2 rounded-full"
                     style={{
                       width: `${total > 0 ? Math.round((reachedVolume / total) * 100) : 0}%`,
                     }}
@@ -203,12 +203,12 @@ export default async function AdminPage({ searchParams }: Props) {
         </section>
 
         {/* Persona breakdown */}
-        <section className="bg-gray-900 rounded-xl p-4 mb-4">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <section className="bg-ios-bg2 rounded-2xl p-4 mb-4">
+          <h2 className="text-ios-caption text-ios-label3 uppercase tracking-widest mb-3">
             Persona
           </h2>
           {personaEntries.length === 0 ? (
-            <p className="text-xs text-gray-600">Немає даних</p>
+            <p className="text-ios-footnote text-ios-label3">Немає даних</p>
           ) : (
             personaEntries.map(([label, count]) => (
               <Bar key={label} label={label} value={count} max={maxPersona} />
@@ -217,12 +217,12 @@ export default async function AdminPage({ searchParams }: Props) {
         </section>
 
         {/* Purpose breakdown */}
-        <section className="bg-gray-900 rounded-xl p-4 mb-4">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <section className="bg-ios-bg2 rounded-2xl p-4 mb-4">
+          <h2 className="text-ios-caption text-ios-label3 uppercase tracking-widest mb-3">
             Purpose
           </h2>
           {purposeEntries.length === 0 ? (
-            <p className="text-xs text-gray-600">Немає даних</p>
+            <p className="text-ios-footnote text-ios-label3">Немає даних</p>
           ) : (
             purposeEntries.map(([label, count]) => (
               <Bar key={label} label={label} value={count} max={maxPurpose} />
@@ -231,25 +231,25 @@ export default async function AdminPage({ searchParams }: Props) {
         </section>
 
         {/* Last 10 responses */}
-        <section className="bg-gray-900 rounded-xl p-4 mb-8">
-          <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <section className="bg-ios-bg2 rounded-2xl p-4 mb-8">
+          <h2 className="text-ios-caption text-ios-label3 uppercase tracking-widest mb-3">
             Останні 10
           </h2>
           {last10.length === 0 ? (
-            <p className="text-xs text-gray-600">Немає даних</p>
+            <p className="text-ios-footnote text-ios-label3">Немає даних</p>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-ios-sep">
               {last10.map((r) => (
-                <div key={r.id} className="flex items-start justify-between gap-2 py-2 border-b border-gray-800 last:border-0">
+                <div key={r.id} className="flex items-start justify-between gap-2 py-2 last:pb-0">
                   <div className="min-w-0">
-                    <div className="text-xs font-medium text-gray-200 truncate">
+                    <div className="text-ios-footnote text-ios-label truncate">
                       {r.persona ?? '—'} · {r.purpose ?? '—'}
                     </div>
-                    <div className="text-xs text-gray-600 mt-0.5 font-mono">
+                    <div className="text-ios-caption text-ios-label3 mt-0.5 font-mono">
                       {r.session_id.slice(0, 8)}…
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 shrink-0 mt-0.5">
+                  <div className="text-ios-caption text-ios-label3 shrink-0 mt-0.5">
                     {formatDate(r.created_at)}
                   </div>
                 </div>

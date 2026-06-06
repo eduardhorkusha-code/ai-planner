@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="uk">
-      <body className="bg-gray-950 text-white min-h-screen flex flex-col max-w-md mx-auto">
+      <body className="bg-ios-bg text-white min-h-screen flex flex-col max-w-md mx-auto">
         <main className="flex-1 overflow-y-auto pb-32">{children}</main>
         <TabBar />
       </body>

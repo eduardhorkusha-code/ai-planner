@@ -1,11 +1,8 @@
 "use client"
 import { useEffect, useState } from "react"
-import { getTasks, saveTasks, addTasks, updateTaskStatus, deleteTask } from "@/lib/store"
+import { getTasks, saveTasks, updateTaskStatus, deleteTask } from "@/lib/store"
 import { Task } from "@/lib/types"
 import Link from "next/link"
-
-const PRIORITY_COLOR = { must: "bg-red-900 text-red-300", nice: "bg-gray-800 text-gray-400" }
-const PRIORITY_LABEL = { must: "🔴 Терміново", nice: "⚪ Nice to have" }
 
 const DEMO_TASKS: Task[] = [
   { id: crypto.randomUUID(), title: "Підготувати слайди для презентації клієнту", priority: "must", estimateMin: 45, deadline: new Date().toISOString().split("T")[0], status: "inbox" },
@@ -27,6 +24,58 @@ function formatDeadline(dateStr: string): string {
   if (dateStr === tomorrowStr) return "Завтра"
   const d = new Date(dateStr + "T00:00:00")
   return `${d.getDate()} ${UA_MONTHS[d.getMonth()]}`
+}
+
+// SVG icons — no emoji in body
+function IconClock() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.25"/>
+      <path d="M6 3.5V6L7.5 7.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconCalendar() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <rect x="1" y="2.5" width="10" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.25"/>
+      <path d="M1 5.5H11" stroke="currentColor" strokeWidth="1.25"/>
+      <path d="M4 1V4M8 1V4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IconTrash() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2.5 4h11M6 4V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V4M13 4l-.75 9a1 1 0 0 1-1 .916H4.75a1 1 0 0 1-1-.916L3 4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconPin() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M9.5 2L12 4.5L8.5 8L9 11.5L7 10L5 11.5L5.5 8L2 4.5L4.5 2L7 5L9.5 2Z" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function PriorityPill({ priority }: { priority: Task["priority"] }) {
+  if (priority === "must") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-ios-red/15 text-ios-red text-ios-caption font-medium shrink-0">
+        <span className="w-1.5 h-1.5 rounded-full bg-ios-red inline-block" />
+        Терміново
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-ios-gray3/50 text-ios-label3 text-ios-caption font-medium shrink-0">
+      Nice to have
+    </span>
+  )
 }
 
 export default function InboxPage() {
@@ -55,50 +104,70 @@ export default function InboxPage() {
 
   if (tasks.length === 0) return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
-      <div className="text-6xl">📥</div>
-      <h2 className="text-xl font-bold">Inbox порожній</h2>
-      <p className="text-gray-400">Поверніться в Capture і виваліть все що в голові</p>
-      <Link href="/capture" className="bg-blue-600 px-6 py-3 rounded-2xl font-semibold">
-        ✏️ Capture
+      <div className="w-16 h-16 bg-ios-bg2 rounded-[22px] flex items-center justify-center">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="4" y="6" width="24" height="22" rx="3" stroke="#636366" strokeWidth="1.75"/>
+          <path d="M4 12H28" stroke="#636366" strokeWidth="1.75"/>
+          <path d="M11 6V9M21 6V9" stroke="#636366" strokeWidth="1.75" strokeLinecap="round"/>
+          <path d="M10 20H22M14 16H22" stroke="#636366" strokeWidth="1.75" strokeLinecap="round"/>
+        </svg>
+      </div>
+      <h2 className="text-ios-title3 font-semibold">Inbox порожній</h2>
+      <p className="text-ios-body text-ios-label2">Поверніться в Capture і виваліть все що в голові</p>
+      <Link
+        href="/capture"
+        className="w-full max-w-xs min-h-[50px] bg-ios-blue text-white text-ios-headline rounded-[14px] flex items-center justify-center gap-2 active:scale-[0.97] active:brightness-90 transition-all duration-150"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M12 2a1.414 1.414 0 0 1 2 2L6 12l-3 1 1-3 8-8Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+        </svg>
+        Capture
       </Link>
       <button
         onClick={loadDemo}
-        className="bg-gray-800 hover:bg-gray-700 text-gray-300 px-6 py-3 rounded-2xl font-semibold transition-colors"
+        className="w-full max-w-xs min-h-[50px] bg-ios-gray3 text-white text-ios-headline rounded-[14px] flex items-center justify-center active:scale-[0.97] active:brightness-75 transition-all duration-150"
       >
-        🎭 Завантажити демо
+        Завантажити демо
       </button>
     </div>
   )
 
   return (
     <div className="p-4 flex flex-col gap-3">
-      <h1 className="text-2xl font-bold pt-4">Inbox 📥</h1>
-      <p className="text-gray-400 text-sm">{tasks.length} задач — оберіть що на сьогодні</p>
+      <h1 className="text-ios-large-title pt-4">Inbox</h1>
+      <p className="text-ios-subhead text-ios-label2">{tasks.length} задач — оберіть що на сьогодні</p>
       {tasks.map(t => (
-        <div key={t.id} className="bg-gray-900 rounded-2xl p-3 flex flex-col gap-2 border border-gray-800">
+        <div key={t.id} className="bg-ios-bg2 rounded-2xl p-4 flex flex-col gap-2">
           <div className="flex items-start gap-2">
-            <span className={`text-xs px-2 py-1 rounded-full shrink-0 mt-0.5 ${PRIORITY_COLOR[t.priority]}`}>
-              {PRIORITY_LABEL[t.priority]}
-            </span>
+            <PriorityPill priority={t.priority} />
           </div>
-          <p className="font-medium text-base leading-snug">{t.title}</p>
-          <div className="flex gap-2 text-sm text-gray-400">
-            <span>⏱ {t.estimateMin} хв</span>
-            {t.deadline && <span>📅 {formatDeadline(t.deadline)}</span>}
+          <p className="text-ios-headline leading-snug">{t.title}</p>
+          <div className="flex gap-3 text-ios-footnote text-ios-label2 items-center">
+            <span className="flex items-center gap-1">
+              <IconClock />
+              {t.estimateMin} хв
+            </span>
+            {t.deadline && (
+              <span className="flex items-center gap-1">
+                <IconCalendar />
+                {formatDeadline(t.deadline)}
+              </span>
+            )}
           </div>
           <div className="flex gap-2 mt-1">
             <button
               onClick={() => moveToToday(t.id)}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white py-3 rounded-xl font-medium text-sm transition-colors min-h-[44px]"
+              className="flex-1 min-h-[50px] bg-ios-blue text-white text-ios-headline rounded-[14px] flex items-center justify-center gap-2 active:scale-[0.97] active:brightness-90 transition-all duration-150"
             >
-              📌 На сьогодні
+              <IconPin />
+              На сьогодні
             </button>
             <button
               onClick={() => remove(t.id)}
               aria-label="Видалити"
-              className="bg-gray-800 hover:bg-gray-700 active:scale-[0.98] text-gray-400 px-4 py-3 rounded-xl text-sm transition-colors min-h-[44px]"
+              className="min-h-[50px] px-4 bg-ios-gray3 text-ios-label2 rounded-[14px] flex items-center justify-center active:bg-ios-red/20 active:text-ios-red active:scale-[0.97] transition-all duration-150"
             >
-              🗑
+              <IconTrash />
             </button>
           </div>
         </div>

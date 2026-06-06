@@ -69,45 +69,45 @@ export default function FunnelPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-ios-bg flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md flex flex-col items-center gap-6 text-center">
           <div className="text-5xl">🎉</div>
-          <h2 className="text-2xl font-bold text-white">Дякуємо!</h2>
-          <p className="text-gray-400 text-base">Готуємо твій планер...</p>
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <h2 className="text-ios-title2 text-ios-label">Дякуємо!</h2>
+          <p className="text-ios-body text-ios-label2">Готуємо твій планер...</p>
+          <div className="w-8 h-8 border-2 border-ios-blue border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-ios-bg flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md flex flex-col gap-6">
 
-        {/* Progress */}
+        {/* Progress header */}
         <div className="flex items-center justify-between">
-          <span className="text-gray-500 text-sm font-medium">
-            {step + 1}/{TOTAL}
+          <span className="text-ios-caption text-ios-label3">
+            {step + 1} з {TOTAL}
           </span>
           <button
             onClick={skip}
-            className="text-gray-500 hover:text-gray-300 text-sm transition-colors"
+            className="text-ios-blue text-ios-body transition-all duration-150 active:opacity-60"
           >
             Пропустити &rarr;
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+        <div className="w-full h-[3px] bg-ios-gray3 rounded-full overflow-hidden">
           <div
-            className="h-full bg-blue-600 rounded-full transition-all duration-300"
+            className="h-full bg-ios-blue rounded-full transition-[width] duration-300 ease-out"
             style={{ width: `${((step + 1) / TOTAL) * 100}%` }}
           />
         </div>
 
         {/* Question card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 flex flex-col gap-5">
-          <h2 className="text-xl font-bold text-white leading-snug">
+        <div className="bg-ios-bg2 rounded-2xl p-5 flex flex-col gap-5">
+          <h2 className="text-ios-title3 text-ios-label leading-snug">
             {current.question}
           </h2>
 
@@ -117,14 +117,19 @@ export default function FunnelPage() {
                 key={opt}
                 onClick={() => { if (!submitting) pick(opt) }}
                 disabled={submitting}
-                className="w-full min-h-[52px] px-5 py-3 bg-gray-800 hover:bg-gray-700
-                           active:scale-[0.98] disabled:opacity-50
-                           text-white text-base font-medium rounded-2xl
+                className="w-full min-h-[52px] px-5 py-3
+                           bg-ios-bg2 border border-ios-sep-opaque
+                           active:scale-[0.97] active:bg-ios-gray3
+                           disabled:opacity-50
+                           text-ios-label text-ios-body rounded-2xl
                            flex items-center justify-between
-                           transition-all border border-transparent hover:border-gray-600"
+                           transition-all duration-150"
               >
                 <span>{opt}</span>
-                <span className="text-gray-500 text-sm">&rarr;</span>
+                {/* Chevron SVG */}
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" aria-hidden="true" className="text-ios-label3 shrink-0">
+                  <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
             ))}
           </div>
@@ -133,7 +138,7 @@ export default function FunnelPage() {
         {/* Skip link (bottom) */}
         <button
           onClick={skip}
-          className="text-center text-gray-600 hover:text-gray-400 text-sm transition-colors"
+          className="text-center text-ios-label3 text-ios-footnote transition-all duration-150 active:opacity-60"
         >
           Пропустити та спробувати демо
         </button>

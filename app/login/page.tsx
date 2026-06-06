@@ -36,36 +36,45 @@ export default function LoginPage() {
   const showFallback = error === 'not-configured'
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-gray-950 text-white">
-      {/* Back link */}
-      <div className="absolute top-6 left-6">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-ios-bg text-ios-label">
+      {/* Back link — safe-area top */}
+      <div className="absolute top-[max(1.5rem,env(safe-area-inset-top))] left-6">
         <Link
           href="/"
-          className="text-sm text-gray-400 hover:text-white transition-colors"
+          className="text-ios-blue text-ios-body transition-all duration-150 active:opacity-60"
         >
-          &#8592; На головну
+          &#8249; На головну
         </Link>
       </div>
 
       <div className="w-full max-w-sm flex flex-col gap-8 text-center">
         {/* Logo / heading */}
-        <div className="flex flex-col gap-2">
-          <div className="text-4xl mb-1">&#x1F9E0;</div>
-          <h1 className="text-2xl font-bold tracking-tight">AI Planner</h1>
-          <p className="text-gray-400 text-sm">Увійди, щоб зберегти прогрес</p>
+        <div className="flex flex-col items-center gap-2">
+          {/* Rounded-rect logomark, no emoji */}
+          <div className="w-14 h-14 bg-ios-bg2 rounded-[18px] flex items-center justify-center mb-1">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <rect x="4" y="6" width="24" height="3" rx="1.5" fill="#0A84FF"/>
+              <rect x="4" y="12" width="18" height="3" rx="1.5" fill="rgba(235,235,245,0.45)"/>
+              <rect x="4" y="18" width="21" height="3" rx="1.5" fill="rgba(235,235,245,0.45)"/>
+              <rect x="4" y="24" width="14" height="3" rx="1.5" fill="rgba(235,235,245,0.25)"/>
+            </svg>
+          </div>
+          <h1 className="text-ios-title2 text-ios-label">AI Planner</h1>
+          <p className="text-ios-subhead text-ios-label2">Увійди, щоб зберегти прогрес</p>
         </div>
 
         {showFallback ? (
           /* Graceful degradation */
           <div className="flex flex-col gap-4">
-            <div
-              className="rounded-xl px-4 py-3 text-sm text-amber-300 bg-amber-950/50 border border-amber-800/40"
-            >
+            <div className="rounded-2xl px-4 py-3 text-ios-footnote text-ios-orange bg-ios-orange/10">
               Логін ще не налаштовано
             </div>
             <Link
               href="/capture"
-              className="w-full flex items-center justify-center gap-2 rounded-2xl py-4 px-6 font-semibold text-base bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all"
+              className="w-full min-h-[50px] flex items-center justify-center gap-2
+                         rounded-[14px] px-6 text-ios-headline text-white bg-ios-blue
+                         active:scale-[0.97] active:brightness-90
+                         transition-all duration-150"
             >
               Продовжити як гість &#8594;
             </Link>
@@ -73,10 +82,16 @@ export default function LoginPage() {
         ) : (
           /* Normal login */
           <div className="flex flex-col gap-4">
+            {/* Google button stays white — brand requirement */}
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-3 rounded-2xl py-4 px-6 font-semibold text-base bg-white text-gray-900 hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full min-h-[50px] flex items-center justify-center gap-3
+                         rounded-[14px] px-6 text-ios-headline font-semibold
+                         bg-white text-gray-900
+                         active:brightness-95 active:scale-[0.97]
+                         transition-all duration-150
+                         disabled:opacity-50 disabled:pointer-events-none"
             >
               {/* Google G icon */}
               <svg
@@ -106,11 +121,21 @@ export default function LoginPage() {
               {loading ? 'Переходимо...' : 'Увійти через Google'}
             </button>
 
-            <div className="text-gray-500 text-xs">або</div>
+            {/* "або" divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-ios-sep-opaque" />
+              <span className="text-ios-label3 text-ios-caption">або</span>
+              <div className="flex-1 h-px bg-ios-sep-opaque" />
+            </div>
 
+            {/* Ghost guest button */}
             <Link
               href="/capture"
-              className="w-full flex items-center justify-center gap-2 rounded-2xl py-3 px-6 text-sm text-gray-400 border border-gray-700 hover:border-gray-500 hover:text-white active:scale-95 transition-all"
+              className="w-full min-h-[50px] flex items-center justify-center gap-2
+                         rounded-[14px] px-6 text-ios-body text-ios-label2
+                         border border-ios-sep-opaque
+                         active:scale-[0.97] active:bg-ios-gray3
+                         transition-all duration-150"
             >
               Продовжити як гість &#8594;
             </Link>
