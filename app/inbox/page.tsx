@@ -78,8 +78,18 @@ function PriorityPill({ priority }: { priority: Task["priority"] }) {
   )
 }
 
+type FilterChip = "all" | "must" | "today" | "nodeadline"
+
+const CHIPS: { id: FilterChip; label: string }[] = [
+  { id: "all",        label: "Всі" },
+  { id: "must",       label: "🔴 Терміново" },
+  { id: "today",      label: "Сьогодні" },
+  { id: "nodeadline", label: "Без дедлайну" },
+]
+
 export default function InboxPage() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [filter, setFilter] = useState<FilterChip>("all")
 
   useEffect(() => {
     setTasks(getTasks().filter(t => t.status === "inbox"))
@@ -101,6 +111,18 @@ export default function InboxPage() {
     saveTasks(freshDemo)
     setTasks(freshDemo)
   }
+
+  // Compute today's date string in the client (standard JS Date API — no SSR concern)
+  const todayStr = new Date().toISOString().split("T")[0]
+
+  function applyFilter(list: Task[]): Task[] {
+    if (filter === "must")       return list.filter(t => t.priority === "must")
+    if (filter === "today")      return list.filter(t => t.deadline === todayStr)
+    if (filter === "nodeadline") return list.filter(t => t.deadline === null)
+    return list
+  }
+
+  const visible = applyFilter(tasks)
 
   if (tasks.length === 0) return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
@@ -135,8 +157,34 @@ export default function InboxPage() {
   return (
     <div className="p-4 flex flex-col gap-3">
       <h1 className="text-ios-large-title pt-4">Inbox</h1>
-      <p className="text-ios-subhead text-ios-label2">{tasks.length} задач — оберіть що на сьогодні</p>
-      {tasks.map(t => (
+
+      {/* Filter chips */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+        {CHIPS.map(chip => (
+          <button
+            key={chip.id}
+            onClick={() => setFilter(chip.id)}
+            className={[
+              "shrink-0 min-h-[34px] px-4 rounded-full text-ios-footnote font-medium transition-all duration-150 active:scale-[0.97]",
+              filter === chip.id
+                ? "bg-ios-blue text-white"
+                : "bg-ios-gray3 text-ios-label",
+            ].join(" ")}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-ios-subhead text-ios-label2">{visible.length} задач — оберіть що на сьогодні</p>
+
+      {visible.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 gap-2 text-center">
+          <p className="text-ios-body text-ios-label2">Немає задач за цим фільтром</p>
+        </div>
+      )}
+
+      {visible.map(t => (
         <div key={t.id} className="bg-ios-bg2 rounded-2xl p-4 flex flex-col gap-2">
           <div className="flex items-start gap-2">
             <PriorityPill priority={t.priority} />

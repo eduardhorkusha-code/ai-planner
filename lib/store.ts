@@ -26,3 +26,7 @@ export function updateTaskStatus(id: string, status: Status): void {
 export function deleteTask(id: string): void {
   saveTasks(getTasks().filter(t => t.id !== id))
 }
+
+export function updateTask(id: string, patch: Partial<Task>): void {
+  saveTasks(getTasks().map(t => t.id === id ? { ...t, ...patch } : t))
+}

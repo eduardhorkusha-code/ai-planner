@@ -39,6 +39,13 @@ type WinWithSpeech = Window & {
   webkitSpeechRecognition?: SpeechRecognitionCtor
 }
 
+type ModelKey = "haiku" | "sonnet"
+
+const MODEL_OPTIONS: { key: ModelKey; label: string; modelId: string }[] = [
+  { key: "haiku",  label: "\u26a1 \u0428\u0432\u0438\u0434\u043a\u043e", modelId: "claude-haiku-4-5" },
+  { key: "sonnet", label: "\ud83e\udde0 \u0420\u043e\u0437\u0443\u043c\u043d\u043e", modelId: "claude-sonnet-4-6" },
+]
+
 /* SVG: microphone */
 function MicIcon({ className }: { className?: string }) {
   return (
@@ -90,6 +97,7 @@ export default function CapturePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [listening, setListening] = useState(false)
+  const [model, setModel] = useState<ModelKey>("haiku")
   const recRef = useRef<SpeechRecognitionLike | null>(null)
   const router = useRouter()
 
@@ -104,7 +112,7 @@ export default function CapturePage() {
     const win = window as WinWithSpeech
     const SR = win.SpeechRecognition ?? win.webkitSpeechRecognition
     if (!SR) {
-      setError("Голосовий ввід не підтримується у цьому браузері")
+      setError("\u0413\u043e\u043b\u043e\u0441\u043e\u0432\u0438\u0439 \u0432\u0432\u0456\u0434 \u043d\u0435 \u043f\u0456\u0434\u0442\u0440\u0438\u043c\u0443\u0454\u0442\u044c\u0441\u044f \u0443 \u0446\u044c\u043e\u043c\u0443 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0456")
       return
     }
 
@@ -143,16 +151,17 @@ export default function CapturePage() {
       .replace(/\u2028/g, "\n")
       .replace(/\u2029/g, "\n")
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+    const selectedModelId = MODEL_OPTIONS.find(o => o.key === model)?.modelId ?? "claude-haiku-4-5"
     setLoading(true)
     setError("")
     try {
       const res = await fetch("/api/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dump: safeDump }),
+        body: JSON.stringify({ dump: safeDump, model: selectedModelId }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Помилка")
+      if (!res.ok) throw new Error(data.error || "\u041f\u043e\u043c\u0438\u043b\u043a\u0430")
       const tasks: Task[] = data.map((t: Omit<Task, "id" | "status">) => ({
         ...t,
         id: crypto.randomUUID(),
@@ -162,7 +171,7 @@ export default function CapturePage() {
       setDump("")
       router.push("/inbox")
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Помилка")
+      setError(e instanceof Error ? e.message : "\u041f\u043e\u043c\u0438\u043b\u043a\u0430")
     } finally {
       setLoading(false)
     }
@@ -170,8 +179,8 @@ export default function CapturePage() {
 
   return (
     <div className="p-4 flex flex-col gap-4 pb-24 pt-[env(safe-area-inset-top)]">
-      <h1 className="text-ios-large-title pt-4">Що в голові?</h1>
-      <p className="text-ios-subhead text-ios-label2">Виваліть все підряд — AI розсортує</p>
+      <h1 className="text-ios-large-title pt-4">\u0429\u043e \u0432 \u0433\u043e\u043b\u043e\u0432\u0456?</h1>
+      <p className="text-ios-subhead text-ios-label2">\u0412\u0438\u0432\u0430\u043b\u0456\u0442\u044c \u0432\u0441\u0435 \u043f\u0456\u0434\u0440\u044f\u0434 \u2014 AI \u0440\u043e\u0437\u0441\u043e\u0440\u0442\u0443\u0454</p>
 
       {/* Textarea wrapper — relative for absolute children */}
       <div className="relative flex-1">
@@ -179,7 +188,7 @@ export default function CapturePage() {
         {listening && (
           <span className="absolute top-3 left-3 z-10 flex items-center gap-1 text-ios-red text-ios-caption animate-pulse pointer-events-none">
             <span className="inline-block w-2 h-2 rounded-full bg-ios-red" />
-            Слухаю...
+            \u0421\u043b\u0443\u0445\u0430\u044e...
           </span>
         )}
 
@@ -187,7 +196,7 @@ export default function CapturePage() {
           className="w-full min-h-[40vh] bg-ios-bg2 rounded-2xl p-4 text-ios-body resize-none
                      outline-none focus:ring-1 focus:ring-ios-blue/50
                      placeholder:text-ios-placeholder pr-14"
-          placeholder="НаписатиАні, зателефонувати клієнту, доробити презу до п'ятниці, купити молоко..."
+          placeholder="\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u0438\u0410\u043d\u0456, \u0437\u0430\u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0443\u0432\u0430\u0442\u0438 \u043a\u043b\u0456\u0454\u043d\u0442\u0443, \u0434\u043e\u0440\u043e\u0431\u0438\u0442\u0438 \u043f\u0440\u0435\u0437\u0443 \u0434\u043e \u043f\u2019\u044f\u0442\u043d\u0438\u0446\u0456, \u043a\u0443\u043f\u0438\u0442\u0438 \u043c\u043e\u043b\u043e\u043a\u043e..."
           value={dump}
           onChange={e => setDump(e.target.value)}
           disabled={loading}
@@ -196,7 +205,7 @@ export default function CapturePage() {
         {/* Mic button — absolute top-right of textarea */}
         <button
           onClick={toggleVoice}
-          aria-label="Голосовий ввід"
+          aria-label="\u0413\u043e\u043b\u043e\u0441\u043e\u0432\u0438\u0439 \u0432\u0432\u0456\u0434"
           disabled={loading}
           className={`absolute top-3 right-3 w-10 h-10 rounded-xl flex items-center justify-center
             transition-all duration-150 disabled:opacity-40 active:scale-[0.90]
@@ -211,6 +220,26 @@ export default function CapturePage() {
 
       {error && <p className="text-ios-red text-ios-footnote">{error}</p>}
 
+      {/* Model selector — segmented pills, above sticky CTA */}
+      <div className="flex gap-2 bg-ios-bg2 rounded-[14px] p-1">
+        {MODEL_OPTIONS.map(opt => (
+          <button
+            key={opt.key}
+            onClick={() => setModel(opt.key)}
+            disabled={loading}
+            className={[
+              "flex-1 min-h-[36px] rounded-[10px] text-ios-footnote font-medium",
+              "transition-all duration-150 active:scale-[0.97] disabled:opacity-40",
+              model === opt.key
+                ? "bg-ios-blue text-white shadow-sm"
+                : "text-ios-label2",
+            ].join(" ")}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {/* Parse button — sticky above TabBar */}
       <div className="sticky bottom-20 z-10 bg-black/80 backdrop-blur-xl pt-2">
         <button
@@ -224,12 +253,12 @@ export default function CapturePage() {
           {loading ? (
             <>
               <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full inline-block" />
-              Аналізую...
+              \u0410\u043d\u0430\u043b\u0456\u0437\u0443\u044e...
             </>
           ) : (
             <>
               <SparkleIcon className="w-5 h-5" />
-              Розібрати з AI
+              \u0420\u043e\u0437\u0456\u0431\u0440\u0430\u0442\u0438 \u0437 AI
             </>
           )}
         </button>

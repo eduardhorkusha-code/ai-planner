@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import { getTasks, updateTaskStatus } from "@/lib/store"
+import { getTasks, updateTaskStatus, updateTask } from "@/lib/store"
 import { Task } from "@/lib/types"
 import Link from "next/link"
 
@@ -19,6 +19,14 @@ function IconWarning() {
       <path d="M6.5 2L12 11H1L6.5 2Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
       <path d="M6.5 6V8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
       <circle cx="6.5" cy="9.5" r="0.625" fill="currentColor"/>
+    </svg>
+  )
+}
+
+function IconArrowRight() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <path d="M3 7.5H12M8.5 4L12 7.5L8.5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
@@ -42,8 +50,19 @@ function PriorityDot() {
   return <span className="w-1.5 h-1.5 rounded-full bg-ios-red inline-block shrink-0" />
 }
 
+/** Returns tomorrow as YYYY-MM-DD using local timezone */
+function getTomorrowISO(): string {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
 export default function TodayPage() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [moved, setMoved] = useState(false)
 
   useEffect(() => {
     setTasks(getTasks().filter(t => t.status === "today" || t.status === "done").sort((a, b) => {
@@ -59,11 +78,30 @@ export default function TodayPage() {
     setTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: next } : x))
   }
 
+  function moveTomorrow() {
+    const tomorrow = getTomorrowISO()
+    const patch = { status: "inbox" as const, deadline: tomorrow }
+    setTasks(prev => {
+      const updated = prev.map(t => {
+        if (t.status === "today") {
+          updateTask(t.id, patch)
+          return { ...t, ...patch }
+        }
+        return t
+      })
+      // After move, only done tasks remain visible in today view
+      return updated.filter(t => t.status === "done")
+    })
+    setMoved(true)
+    setTimeout(() => setMoved(false), 2500)
+  }
+
   const done = tasks.filter(t => t.status === "done").length
   const total = tasks.length
   const totalMin = tasks.filter(t => t.status === "today").reduce((s, t) => s + t.estimateMin, 0)
   const hoursLeft = Math.floor(totalMin / 60)
   const minsLeft = totalMin % 60
+  const unfinishedToday = tasks.filter(t => t.status === "today").length
 
   // P2-2: all done celebration
   const allDone = done === total && total > 0
@@ -121,6 +159,25 @@ export default function TodayPage() {
           ~{Math.round(totalMin / 60)}год запланованих задач — це більше за робочий день (8 год)
         </p>
       )}
+
+      {/* Move unfinished to tomorrow */}
+      {unfinishedToday > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <button
+            onClick={moveTomorrow}
+            className="w-full min-h-[44px] bg-ios-bg2 border border-ios-sep rounded-2xl flex items-center justify-center gap-2 text-ios-footnote text-ios-label2 active:scale-[0.97] active:brightness-90 transition-all duration-150"
+          >
+            <IconArrowRight />
+            Перенести невиконане завтра ({unfinishedToday})
+          </button>
+          {moved && (
+            <p className="text-ios-footnote text-ios-green text-center transition-opacity duration-300">
+              Перенесено в Inbox на завтра
+            </p>
+          )}
+        </div>
+      )}
+
       {tasks.map(t => (
         <button
           key={t.id}
