@@ -93,13 +93,17 @@ export default function CapturePage() {
 
   async function handleParse() {
     if (!dump.trim()) return
+    const safeDump = dump
+      .replace(/\u2028/g, "\n")
+      .replace(/\u2029/g, "\n")
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
     setLoading(true)
     setError("")
     try {
       const res = await fetch("/api/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dump }),
+        body: JSON.stringify({ dump: safeDump }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Помилка")

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       .replace(/\u2029/g, "\n")
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
 
-    const apiKey = process.env.ANTHROPIC_API_KEY
+    const apiKey = (process.env.ANTHROPIC_API_KEY ?? "").replace(/[^\x21-\x7E]/g, "")
     if (!apiKey) {
       return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 })
     }
