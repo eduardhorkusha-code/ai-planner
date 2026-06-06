@@ -128,6 +128,26 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const last10 = all.slice(0, 10)
 
+  // Users section
+  let usersTotal = 0
+  let recentUsers: Array<{ id: string; email: string | undefined; created_at: string }> = []
+  let usersError: string | null = null
+  try {
+    const { data: usersData, error: usersErr } = await supabase.auth.admin.listUsers({ page: 1, perPage: 100 })
+    if (usersErr) {
+      usersError = usersErr.message
+    } else if (usersData) {
+      usersTotal = usersData.users.length
+      recentUsers = usersData.users
+        .slice()
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5)
+        .map((u) => ({ id: u.id, email: u.email, created_at: u.created_at }))
+    }
+  } catch (e) {
+    usersError = e instanceof Error ? e.message : 'Невідома помилка'
+  }
+
   return (
     <main className="min-h-screen bg-ios-bg text-ios-label p-4 pb-[env(safe-area-inset-bottom)]">
       <div className="max-w-md mx-auto">
@@ -255,6 +275,41 @@ export default async function AdminPage({ searchParams }: Props) {
                 </div>
               ))}
             </div>
+          )}
+        </section>
+        {/* Users section */}
+        <section className="bg-ios-bg2 rounded-2xl p-4 mb-8">
+          <h2 className="text-ios-caption text-ios-label3 uppercase tracking-widest mb-3">
+            Користувачі
+          </h2>
+          {usersError ? (
+            <p className="text-ios-footnote text-ios-red">{usersError}</p>
+          ) : (
+            <>
+              <div className="text-ios-title1 text-ios-blue">{usersTotal}</div>
+              <div className="text-ios-caption text-ios-label3 mt-0.5 mb-4">зареєстровано</div>
+              {recentUsers.length === 0 ? (
+                <p className="text-ios-footnote text-ios-label3">Немає користувачів</p>
+              ) : (
+                <div className="divide-y divide-ios-sep">
+                  {recentUsers.map((u) => (
+                    <div key={u.id} className="flex items-start justify-between gap-2 py-2 last:pb-0">
+                      <div className="min-w-0">
+                        <div className="text-ios-footnote text-ios-label truncate">
+                          {u.email ?? '—'}
+                        </div>
+                        <div className="text-ios-caption text-ios-label3 mt-0.5 font-mono">
+                          {u.id.slice(0, 8)}…
+                        </div>
+                      </div>
+                      <div className="text-ios-caption text-ios-label3 shrink-0 mt-0.5">
+                        {formatDate(u.created_at)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>

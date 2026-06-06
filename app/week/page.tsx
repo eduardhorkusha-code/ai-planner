@@ -4,7 +4,7 @@ import { getTasks } from "@/lib/store"
 import { Task } from "@/lib/types"
 
 const UA_DAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
-const UA_MONTHS = ["січ","лют","бер","квіт","трав","черв","лип","серп","вер","жовт","лист","груд"]
+const UA_MONTHS = ["січ", "лют", "бер", "квіт", "трав", "черв", "лип", "серп", "вер", "жовт", "лист", "груд"]
 
 // Returns Monday of the week containing `date`
 function getMonday(date: Date): Date {
@@ -53,6 +53,23 @@ function buildWeek(tasks: Task[], today: Date): DayBucket[] {
       isToday: dateStr === todayStr,
     }
   })
+}
+
+// Pluralise Ukrainian task count
+function pluralTasks(n: number): string {
+  if (n === 1) return "1 задача"
+  if (n >= 2 && n <= 4) return `${n} задачі`
+  return `${n} задач`
+}
+
+// Format estimate in minutes → "Xг Yхв" or "Yхв"
+function formatHours(totalMin: number): string {
+  if (totalMin === 0) return ""
+  const h = Math.floor(totalMin / 60)
+  const m = totalMin % 60
+  if (h === 0) return `~${m}хв`
+  if (m === 0) return `~${h}год`
+  return `~${h}год ${m}хв`
 }
 
 // SVG icons
@@ -104,14 +121,20 @@ function TaskCard({ task }: { task: Task }) {
 export default function WeekPage() {
   const [buckets, setBuckets] = useState<DayBucket[]>([])
   const [totalCount, setTotalCount] = useState(0)
+  const [totalMin, setTotalMin] = useState(0)
 
   useEffect(() => {
     const tasks = getTasks()
     const today = new Date()
     const week = buildWeek(tasks, today)
     setBuckets(week)
-    setTotalCount(week.reduce((acc, b) => acc + b.tasks.length, 0))
+    const count = week.reduce((acc, b) => acc + b.tasks.length, 0)
+    const mins = week.reduce((acc, b) => acc + b.tasks.reduce((s, t) => s + (t.estimateMin || 0), 0), 0)
+    setTotalCount(count)
+    setTotalMin(mins)
   }, [])
+
+  const hoursStr = formatHours(totalMin)
 
   return (
     <div className="px-4 pt-6 pb-32">
@@ -121,42 +144,67 @@ export default function WeekPage() {
         <p className="text-ios-footnote text-ios-label2 mt-0.5">
           {totalCount === 0
             ? "Немає задач на цей тиждень"
-            : `${totalCount} ${totalCount === 1 ? "задача" : totalCount < 5 ? "задачі" : "задач"}`}
+            : hoursStr
+              ? `${pluralTasks(totalCount)} · ${hoursStr}`
+              : pluralTasks(totalCount)}
         </p>
       </div>
 
       {/* Day list */}
-      <div className="flex flex-col gap-6">
-        {buckets.map((bucket) => (
-          <div key={bucket.dateStr}>
-            {/* Day header */}
-            <div className="flex items-center gap-2 mb-2">
-              <span
-                className="text-ios-headline font-semibold"
-                style={{ color: bucket.isToday ? "var(--color-ios-blue)" : "var(--color-ios-label)" }}
-              >
-                {bucket.label}
-              </span>
-              {bucket.isToday && (
-                <span className="text-ios-caption px-1.5 py-0.5 rounded-full text-white"
-                      style={{ background: "var(--color-ios-blue)", fontSize: 10 }}>
-                  сьогодні
-                </span>
+      <div className="flex flex-col gap-4">
+        {buckets.map((bucket) => {
+          const isEmpty = bucket.tasks.length === 0
+          return (
+            <div
+              key={bucket.dateStr}
+              className="rounded-2xl overflow-hidden"
+              style={bucket.isToday
+                ? { border: "1.5px solid var(--color-ios-blue)", background: "rgba(10,132,255,0.05)" }
+                : { border: "1px solid var(--color-ios-sep)" }
+              }
+            >
+              {/* Day header row */}
+              <div className="flex items-center justify-between px-4 py-3"
+                   style={bucket.isToday ? { borderBottom: isEmpty ? undefined : "1px solid rgba(10,132,255,0.2)" } : { borderBottom: isEmpty ? undefined : "1px solid var(--color-ios-sep)" }}>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-ios-headline font-semibold"
+                    style={{ color: bucket.isToday ? "var(--color-ios-blue)" : "var(--color-ios-label)" }}
+                  >
+                    {bucket.label}
+                  </span>
+                  {bucket.isToday && (
+                    <span className="text-white rounded-full px-2 py-0.5"
+                          style={{ background: "var(--color-ios-blue)", fontSize: 11, fontWeight: 600, lineHeight: "16px" }}>
+                      сьогодні
+                    </span>
+                  )}
+                </div>
+                {!isEmpty && (
+                  <span className="text-ios-caption rounded-full px-2 py-0.5"
+                        style={{ background: bucket.isToday ? "rgba(10,132,255,0.18)" : "rgba(142,142,147,0.18)", color: bucket.isToday ? "var(--color-ios-blue)" : "var(--color-ios-label2)", fontSize: 11, fontWeight: 500 }}>
+                    {pluralTasks(bucket.tasks.length)}
+                  </span>
+                )}
+              </div>
+
+              {/* Tasks or empty */}
+              {isEmpty ? (
+                <div className="flex items-center px-4 py-2.5">
+                  <span className="text-ios-caption text-ios-label3" style={{ letterSpacing: "0.01em" }}>
+                    Вільно
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 px-3 py-3">
+                  {bucket.tasks.map(task => (
+                    <TaskCard key={task.id} task={task} />
+                  ))}
+                </div>
               )}
             </div>
-
-            {/* Tasks or empty state */}
-            {bucket.tasks.length === 0 ? (
-              <p className="text-ios-footnote text-ios-label3 pl-1">—</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {bucket.tasks.map(task => (
-                  <TaskCard key={task.id} task={task} />
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

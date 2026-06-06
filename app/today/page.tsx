@@ -116,8 +116,6 @@ export default function TodayPage() {
   const done = tasks.filter(t => t.status === "done").length
   const total = tasks.length
   const totalMin = tasks.filter(t => t.status === "today").reduce((s, t) => s + t.estimateMin, 0)
-  const hoursLeft = Math.floor(totalMin / 60)
-  const minsLeft = totalMin % 60
   const unfinishedToday = tasks.filter(t => t.status === "today").length
 
   // P2-2: all done celebration
@@ -163,19 +161,56 @@ export default function TodayPage() {
       {allDone && (
         <p className="text-ios-green text-ios-subhead font-medium">🎉 Все зроблено!</p>
       )}
-      {totalMin > 0 && (
-        <p className="text-ios-footnote text-ios-label2 flex items-center gap-1">
-          <IconClock />
-          ~{hoursLeft > 0 ? `${hoursLeft}год ` : ""}{minsLeft}хв задач залишилось
-        </p>
-      )}
-      {/* P1-4: realistic warning */}
-      {totalMin > 480 && (
-        <p className="text-ios-footnote text-ios-red flex items-center gap-1">
-          <IconWarning />
-          ~{Math.round(totalMin / 60)}год запланованих задач — це більше за робочий день (8 год)
-        </p>
-      )}
+      {/* Insight card — plan realism (replaces old thin warning) */}
+      {totalMin > 0 && (() => {
+        const WORKDAY_MIN = 480
+        const planHours = +(totalMin / 60).toFixed(1)
+        const overloadHours = +(planHours - 8).toFixed(1)
+        const barPct = Math.min(100, Math.round((totalMin / WORKDAY_MIN) * 100))
+        const isOver = totalMin > WORKDAY_MIN
+        const isCritical = totalMin > WORKDAY_MIN * 1.25 // >10h
+        const barColor = isCritical ? "bg-ios-red" : isOver ? "bg-ios-orange" : "bg-ios-green"
+        const textAccent = isCritical ? "text-ios-red" : isOver ? "text-ios-orange" : "text-ios-green"
+        return (
+          <div className="bg-ios-bg2 rounded-2xl p-4 flex flex-col gap-2.5">
+            {/* Header row */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-ios-footnote text-ios-label2">Заплановано</p>
+                <p className={`text-ios-headline font-semibold ${textAccent}`}>
+                  ~{planHours} год
+                </p>
+              </div>
+              <div className="flex flex-col gap-0.5 text-right">
+                <p className="text-ios-footnote text-ios-label2">Робочий день</p>
+                <p className="text-ios-headline font-semibold text-ios-label">8 год</p>
+              </div>
+            </div>
+            {/* Day-load progress bar */}
+            <div className="w-full bg-ios-gray3 rounded-full h-1.5 overflow-hidden">
+              <div
+                className={`h-1.5 rounded-full transition-[width] duration-500 ease-out ${barColor}`}
+                style={{ width: `${barPct}%` }}
+              />
+            </div>
+            {/* Status line */}
+            {isOver ? (
+              <p className={`text-ios-footnote font-medium ${textAccent} flex items-center gap-1`}>
+                <IconWarning />
+                Перевантаження на ~{overloadHours} год — план нереалістичний, перенеси частину
+              </p>
+            ) : (
+              <p className="text-ios-footnote font-medium text-ios-green flex items-center gap-1">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                  <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.25"/>
+                  <path d="M4 6.5L6 8.5L9.5 5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                План реалістичний
+              </p>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Move unfinished to tomorrow */}
       {unfinishedToday > 0 && (
