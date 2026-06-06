@@ -27,6 +27,9 @@ export default function TodayPage() {
   const hoursLeft = Math.floor(totalMin / 60)
   const minsLeft = totalMin % 60
 
+  // P2-2: all done celebration
+  const allDone = done === total && total > 0
+
   if (tasks.length === 0) return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
       <div className="text-6xl">✅</div>
@@ -42,19 +45,25 @@ export default function TodayPage() {
     <div className="p-4 flex flex-col gap-3">
       <h1 className="text-2xl font-bold pt-4">Сьогодні ✅</h1>
       <p className="text-gray-400 text-sm">{done}/{total} виконано</p>
-      <div className="w-full bg-gray-800 rounded-full h-2 mb-1">
+      {/* P2-2: progress bar — green when all done, thicker */}
+      <div className="w-full bg-gray-800 rounded-full h-2.5 mb-1">
         <div
-          className="bg-blue-500 h-2 rounded-full transition-all"
+          className={`h-2.5 rounded-full transition-all ${allDone ? "bg-green-500" : "bg-blue-500"}`}
           style={{ width: total ? `${(done / total) * 100}%` : "0%" }}
         />
       </div>
+      {/* P2-2: celebration row */}
+      {allDone && (
+        <p className="text-green-400 text-sm font-medium">🎉 Все зроблено!</p>
+      )}
       {totalMin > 0 && (
         <p className="text-gray-400 text-sm">
           ⏱ ~{hoursLeft > 0 ? `${hoursLeft}год ` : ""}{minsLeft}хв задач залишилось
         </p>
       )}
+      {/* P1-4: realistic warning with actual hours number */}
       {totalMin > 480 && (
-        <p className="text-red-400 text-sm">⚠️ Забагато для одного дня</p>
+        <p className="text-red-400 text-sm">⚠️ ~{Math.round(totalMin / 60)}год запланованих задач — це більше за робочий день (8 год)</p>
       )}
       {tasks.map(t => (
         <button
@@ -63,7 +72,8 @@ export default function TodayPage() {
           className={`w-full flex items-center gap-3 bg-gray-900 rounded-2xl p-4 border text-left transition-all
             ${t.status === "done" ? "border-green-900 opacity-60" : "border-gray-800"}`}
         >
-          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors
+          {/* P0: larger checkbox w-7 h-7 + active:scale-95 */}
+          <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors active:scale-95
             ${t.status === "done" ? "bg-green-500 border-green-500" : "border-gray-600"}`}>
             {t.status === "done" && <span className="text-xs">✓</span>}
           </div>

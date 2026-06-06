@@ -11,7 +11,7 @@ const tabs = [
 export default function TabBar() {
   const path = usePathname()
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 flex">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 flex pb-[env(safe-area-inset-bottom)]">
       {tabs.map(t => (
         <Link
           key={t.href}
