@@ -256,10 +256,13 @@ export default function TodayPage() {
             </div>
             {/* Status line */}
             {isOver ? (
-              <p className={`text-ios-footnote font-medium ${textAccent} flex items-center gap-1`}>
-                <IconWarning />
-                Перевантаження на ~{overloadHours} год — план нереалістичний, перенеси частину
-              </p>
+              <div className="flex flex-col gap-1">
+                <p className={`text-ios-footnote font-medium ${textAccent} flex items-center gap-1`}>
+                  <IconWarning />
+                  Перевантаження на ~{overloadHours} год — план нереалістичний, перенеси частину
+                </p>
+                <p className="text-ios-blue text-ios-subhead font-bold text-center">💪 ТИ ЗМОЖЕШ!!!</p>
+              </div>
             ) : (
               <p className="text-ios-footnote font-medium text-ios-green flex items-center gap-1">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
