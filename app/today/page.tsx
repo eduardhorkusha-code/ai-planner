@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import { getTasks, updateTaskStatus, updateTask } from "@/lib/store"
+import { getTasks, updateTaskStatus, updateTask, addTasks } from "@/lib/store"
 import { Task } from "@/lib/types"
 import Link from "next/link"
 
@@ -27,6 +27,17 @@ function IconArrowRight() {
   return (
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
       <path d="M3 7.5H12M8.5 4L12 7.5L8.5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconRepeat() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M1.5 4.5C2.1 2.7 3.9 1.5 6 1.5C8.5 1.5 10.5 3.5 10.5 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M10.5 7.5C9.9 9.3 8.1 10.5 6 10.5C3.5 10.5 1.5 8.5 1.5 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      <path d="M8.5 4.5L10.5 6L12.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M3.5 7.5L1.5 6L-0.5 7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
@@ -60,6 +71,25 @@ function getTomorrowISO(): string {
   return `${y}-${m}-${day}`
 }
 
+/** Compute next deadline for a repeating task */
+function nextDeadline(current: string | null, repeat: "daily" | "weekly"): string {
+  // Base: use current deadline if valid, otherwise today
+  let base: Date
+  if (current) {
+    // Parse as local date to avoid UTC shift
+    const [y, mo, d] = current.split("-").map(Number)
+    base = new Date(y, mo - 1, d)
+  } else {
+    base = new Date()
+  }
+  const days = repeat === "daily" ? 1 : 7
+  base.setDate(base.getDate() + days)
+  const y = base.getFullYear()
+  const m = String(base.getMonth() + 1).padStart(2, "0")
+  const day = String(base.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
 export default function TodayPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [moved, setMoved] = useState(false)
@@ -76,6 +106,35 @@ export default function TodayPage() {
   function toggle(t: Task) {
     const next = t.status === "done" ? "today" : "done"
     updateTaskStatus(t.id, next)
+
+    // Auto-regenerate repeating task when marked done
+    if (next === "done" && t.repeat) {
+      const nd = nextDeadline(t.deadline, t.repeat)
+      // Guard: skip if a non-done copy with same title + deadline already exists in storage
+      const all = getTasks()
+      const alreadyExists = all.some(
+        x => x.id !== t.id && x.title === t.title && x.deadline === nd && x.status !== "done"
+      )
+      if (!alreadyExists) {
+        const next_task: Task = {
+          id: crypto.randomUUID(),
+          title: t.title,
+          priority: t.priority,
+          estimateMin: t.estimateMin,
+          repeat: t.repeat,
+          deadline: nd,
+          status: "today",
+        }
+        addTasks([next_task])
+        // Also update local state so user sees the new card immediately
+        setTasks(prev => {
+          const updated: Task[] = prev.map(x => x.id === t.id ? { ...x, status: next as Task["status"] } : x)
+          return [...updated, next_task]
+        })
+        return
+      }
+    }
+
     setTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: next } : x))
   }
 
@@ -157,7 +216,7 @@ export default function TodayPage() {
           style={{ width: total ? `${(done / total) * 100}%` : "0%" }}
         />
       </div>
-      {/* P2-2: celebration row — keep 🎉 per spec */}
+      {/* P2-2: celebration row — keep emoji per spec */}
       {allDone && (
         <p className="text-ios-green text-ios-subhead font-medium">🎉 Все зроблено!</p>
       )}
@@ -257,12 +316,25 @@ export default function TodayPage() {
           className={`w-full flex items-center gap-3 bg-ios-bg2 rounded-2xl p-4 text-left transition-all duration-150 active:scale-[0.98] active:brightness-90
             ${t.status === "done" ? "opacity-50" : ""}`}
         >
-          {/* §3.5 checkbox with SVG checkmark, active:scale-[0.9] on parent button */}
+          {/* checkbox with SVG checkmark */}
           <CheckboxIcon done={t.status === "done"} />
           <div className="flex-1 min-w-0">
-            <p className={`text-ios-headline ${t.status === "done" ? "line-through text-ios-label3" : ""}`}>
-              {t.title}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className={`text-ios-headline ${t.status === "done" ? "line-through text-ios-label3" : ""}`}>
+                {t.title}
+              </p>
+              {/* Repeat badge — shown when repeat is set */}
+              {t.repeat && (
+                <span
+                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-[6px] text-ios-caption2 font-medium"
+                  style={{ background: "rgba(10,132,255,0.12)", color: "#0A84FF" }}
+                  title={t.repeat === "daily" ? "Щодня" : "Щотижня"}
+                >
+                  <IconRepeat />
+                  {t.repeat === "daily" ? "щодня" : "щотижня"}
+                </span>
+              )}
+            </div>
             <p className="text-ios-footnote text-ios-label2 mt-0.5 flex items-center gap-1.5">
               <IconClock />
               {t.estimateMin} хв

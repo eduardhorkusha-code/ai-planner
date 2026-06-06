@@ -8,4 +8,5 @@ export type Task = {
   estimateMin: number
   deadline: string | null
   status: Status
+  repeat?: "daily" | "weekly" | null
 }

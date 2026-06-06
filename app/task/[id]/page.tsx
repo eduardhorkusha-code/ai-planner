@@ -51,7 +51,7 @@ function IconCheckCircle() {
 }
 
 // Segmented control component
-function Segmented<T extends string>({
+function Segmented<T extends string | null>({
   options,
   value,
   onChange,
@@ -101,6 +101,14 @@ const STATUS_OPTIONS: { label: string; value: Status }[] = [
   { label: "Done", value: "done" },
 ]
 
+type RepeatValue = "daily" | "weekly" | null
+
+const REPEAT_OPTIONS: { label: string; value: RepeatValue }[] = [
+  { label: "Ні", value: null },
+  { label: "Щодня", value: "daily" },
+  { label: "Щотижня", value: "weekly" },
+]
+
 export default function TaskDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -113,6 +121,7 @@ export default function TaskDetailPage() {
   const [deadline, setDeadline] = useState("")
   const [status, setStatus] = useState<Status>("inbox")
   const [saved, setSaved] = useState(false)
+  const [repeat, setRepeat] = useState<"daily" | "weekly" | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   // Load task on mount
@@ -125,6 +134,7 @@ export default function TaskDetailPage() {
       setEstimateMin(found.estimateMin)
       setDeadline(found.deadline ?? "")
       setStatus(found.status)
+      setRepeat(found.repeat ?? null)
     }
   }, [id])
 
@@ -162,6 +172,11 @@ export default function TaskDetailPage() {
   function handleStatusChange(v: Status) {
     setStatus(v)
     persist({ status: v })
+  }
+
+  function handleRepeatChange(v: "daily" | "weekly" | null) {
+    setRepeat(v)
+    persist({ repeat: v })
   }
 
   function handleDelete() {
@@ -346,6 +361,15 @@ export default function TaskDetailPage() {
             options={STATUS_OPTIONS}
             value={status}
             onChange={handleStatusChange}
+          />
+        </Section>
+
+        {/* Repeat */}
+        <Section label="Повторювати">
+          <Segmented<RepeatValue>
+            options={REPEAT_OPTIONS}
+            value={repeat}
+            onChange={handleRepeatChange}
           />
         </Section>
 
