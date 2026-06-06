@@ -63,6 +63,7 @@ function getTomorrowISO(): string {
 export default function TodayPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [moved, setMoved] = useState(false)
+  const [energySorted, setEnergySorted] = useState(false)
 
   useEffect(() => {
     setTasks(getTasks().filter(t => t.status === "today" || t.status === "done").sort((a, b) => {
@@ -76,6 +77,22 @@ export default function TodayPage() {
     const next = t.status === "done" ? "today" : "done"
     updateTaskStatus(t.id, next)
     setTasks(prev => prev.map(x => x.id === t.id ? { ...x, status: next } : x))
+  }
+
+  function sortByEnergy() {
+    setTasks(prev => {
+      const notDone = [...prev.filter(t => t.status === "today")]
+        .sort((a, b) => {
+          // must before nice
+          if (a.priority === "must" && b.priority !== "must") return -1
+          if (b.priority === "must" && a.priority !== "must") return 1
+          // within same priority — heavier estimate first (hard work first)
+          return b.estimateMin - a.estimateMin
+        })
+      const done = prev.filter(t => t.status === "done")
+      return [...notDone, ...done]
+    })
+    setEnergySorted(true)
   }
 
   function moveTomorrow() {
@@ -173,6 +190,26 @@ export default function TodayPage() {
           {moved && (
             <p className="text-ios-footnote text-ios-green text-center transition-opacity duration-300">
               Перенесено в Inbox на завтра
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Energy sort button */}
+      {unfinishedToday > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <button
+            onClick={sortByEnergy}
+            className="w-full min-h-[44px] bg-ios-gray3 rounded-2xl flex items-center justify-center gap-2 text-ios-footnote text-ios-label active:scale-[0.97] active:brightness-90 transition-all duration-150"
+          >
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <path d="M8 1.5L3.5 8.5H7L7 13.5L11.5 6.5H8L8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+            </svg>
+            <span className="font-medium">Розкласти за енергією</span>
+          </button>
+          {energySorted && (
+            <p className="text-ios-footnote text-ios-label2 text-center">
+              Спершу складне — поки є енергія 🔋
             </p>
           )}
         </div>

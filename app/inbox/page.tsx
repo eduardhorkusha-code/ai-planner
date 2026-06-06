@@ -186,22 +186,28 @@ export default function InboxPage() {
 
       {visible.map(t => (
         <div key={t.id} className="bg-ios-bg2 rounded-2xl p-4 flex flex-col gap-2">
-          <div className="flex items-start gap-2">
-            <PriorityPill priority={t.priority} />
-          </div>
-          <p className="text-ios-headline leading-snug">{t.title}</p>
-          <div className="flex gap-3 text-ios-footnote text-ios-label2 items-center">
-            <span className="flex items-center gap-1">
-              <IconClock />
-              {t.estimateMin} хв
-            </span>
-            {t.deadline && (
+          {/* Tappable title block → /task/:id */}
+          <Link
+            href={`/task/${t.id}`}
+            className="flex flex-col gap-2 active:opacity-70 transition-opacity duration-150"
+          >
+            <div className="flex items-start gap-2">
+              <PriorityPill priority={t.priority} />
+            </div>
+            <p className="text-ios-headline leading-snug">{t.title}</p>
+            <div className="flex gap-3 text-ios-footnote text-ios-label2 items-center">
               <span className="flex items-center gap-1">
-                <IconCalendar />
-                {formatDeadline(t.deadline)}
+                <IconClock />
+                {t.estimateMin} хв
               </span>
-            )}
-          </div>
+              {t.deadline && (
+                <span className="flex items-center gap-1">
+                  <IconCalendar />
+                  {formatDeadline(t.deadline)}
+                </span>
+              )}
+            </div>
+          </Link>
           <div className="flex gap-2 mt-1">
             <button
               onClick={() => moveToToday(t.id)}

@@ -179,8 +179,8 @@ export default function CapturePage() {
 
   return (
     <div className="p-4 flex flex-col gap-4 pb-24 pt-[env(safe-area-inset-top)]">
-      <h1 className="text-ios-large-title pt-4">\u0429\u043e \u0432 \u0433\u043e\u043b\u043e\u0432\u0456?</h1>
-      <p className="text-ios-subhead text-ios-label2">\u0412\u0438\u0432\u0430\u043b\u0456\u0442\u044c \u0432\u0441\u0435 \u043f\u0456\u0434\u0440\u044f\u0434 \u2014 AI \u0440\u043e\u0437\u0441\u043e\u0440\u0442\u0443\u0454</p>
+      <h1 className="text-ios-large-title pt-4">{"Що в голові?"}</h1>
+      <p className="text-ios-subhead text-ios-label2">{"Виваліть все підряд — AI розсортує"}</p>
 
       {/* Textarea wrapper — relative for absolute children */}
       <div className="relative flex-1">
@@ -188,7 +188,7 @@ export default function CapturePage() {
         {listening && (
           <span className="absolute top-3 left-3 z-10 flex items-center gap-1 text-ios-red text-ios-caption animate-pulse pointer-events-none">
             <span className="inline-block w-2 h-2 rounded-full bg-ios-red" />
-            \u0421\u043b\u0443\u0445\u0430\u044e...
+            {"Слухаю..."}
           </span>
         )}
 
@@ -196,7 +196,7 @@ export default function CapturePage() {
           className="w-full min-h-[40vh] bg-ios-bg2 rounded-2xl p-4 text-ios-body resize-none
                      outline-none focus:ring-1 focus:ring-ios-blue/50
                      placeholder:text-ios-placeholder pr-14"
-          placeholder="\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u0438\u0410\u043d\u0456, \u0437\u0430\u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0443\u0432\u0430\u0442\u0438 \u043a\u043b\u0456\u0454\u043d\u0442\u0443, \u0434\u043e\u0440\u043e\u0431\u0438\u0442\u0438 \u043f\u0440\u0435\u0437\u0443 \u0434\u043e \u043f\u2019\u044f\u0442\u043d\u0438\u0446\u0456, \u043a\u0443\u043f\u0438\u0442\u0438 \u043c\u043e\u043b\u043e\u043a\u043e..."
+          placeholder={"НаписатиАні, зателефонувати клієнту, доробити презу до п’ятниці, купити молоко..."}
           value={dump}
           onChange={e => setDump(e.target.value)}
           disabled={loading}
@@ -205,7 +205,7 @@ export default function CapturePage() {
         {/* Mic button — absolute top-right of textarea */}
         <button
           onClick={toggleVoice}
-          aria-label="\u0413\u043e\u043b\u043e\u0441\u043e\u0432\u0438\u0439 \u0432\u0432\u0456\u0434"
+          aria-label={"Голосовий ввід"}
           disabled={loading}
           className={`absolute top-3 right-3 w-10 h-10 rounded-xl flex items-center justify-center
             transition-all duration-150 disabled:opacity-40 active:scale-[0.90]
@@ -253,12 +253,12 @@ export default function CapturePage() {
           {loading ? (
             <>
               <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full inline-block" />
-              \u0410\u043d\u0430\u043b\u0456\u0437\u0443\u044e...
+              {"Аналізую..."}
             </>
           ) : (
             <>
               <SparkleIcon className="w-5 h-5" />
-              \u0420\u043e\u0437\u0456\u0431\u0440\u0430\u0442\u0438 \u0437 AI
+              {"Розібрати з AI"}
             </>
           )}
         </button>
