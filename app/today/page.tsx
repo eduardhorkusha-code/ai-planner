@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { getTasks, updateTaskStatus, updateTask, addTasks } from "@/lib/store"
+import { getWorkdayMinutes, getWorkdayHours } from "@/lib/settings"
 import { Task } from "@/lib/types"
 import Link from "next/link"
 
@@ -222,12 +223,13 @@ export default function TodayPage() {
       )}
       {/* Insight card — plan realism (replaces old thin warning) */}
       {totalMin > 0 && (() => {
-        const WORKDAY_MIN = 480
+        const WORKDAY_MIN = getWorkdayMinutes()
+        const WORKDAY_HOURS = getWorkdayHours()
         const planHours = +(totalMin / 60).toFixed(1)
-        const overloadHours = +(planHours - 8).toFixed(1)
+        const overloadHours = +(planHours - WORKDAY_HOURS).toFixed(1)
         const barPct = Math.min(100, Math.round((totalMin / WORKDAY_MIN) * 100))
         const isOver = totalMin > WORKDAY_MIN
-        const isCritical = totalMin > WORKDAY_MIN * 1.25 // >10h
+        const isCritical = totalMin > WORKDAY_MIN * 1.25 // >configured*1.25h
         const barColor = isCritical ? "bg-ios-red" : isOver ? "bg-ios-orange" : "bg-ios-green"
         const textAccent = isCritical ? "text-ios-red" : isOver ? "text-ios-orange" : "text-ios-green"
         return (
@@ -242,7 +244,7 @@ export default function TodayPage() {
               </div>
               <div className="flex flex-col gap-0.5 text-right">
                 <p className="text-ios-footnote text-ios-label2">Робочий день</p>
-                <p className="text-ios-headline font-semibold text-ios-label">8 год</p>
+                <p className="text-ios-headline font-semibold text-ios-label">{WORKDAY_HOURS} год</p>
               </div>
             </div>
             {/* Day-load progress bar */}

@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { getTasks, updateTask } from "@/lib/store"
+import { getWorkdayMinutes } from "@/lib/settings"
 import { Task } from "@/lib/types"
 
 const UA_DAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
@@ -180,7 +181,7 @@ function TaskCard({ task }: { task: Task }) {
 
 // Workload bar component (horizontal, capped at 100%)
 function WorkloadBar({ minutes }: { minutes: number }) {
-  const REF_MIN = 480 // 8h = 100%
+  const REF_MIN = getWorkdayMinutes() // configured workday = 100%
   const pct = Math.min(100, Math.round((minutes / REF_MIN) * 100))
   const color = workloadColor(minutes)
   const label = workloadLabel(minutes)

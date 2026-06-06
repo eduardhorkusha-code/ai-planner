@@ -128,21 +128,31 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const last10 = all.slice(0, 10)
 
-  // Users section
+  // Users section — planner_users only (ai-planner logins, not the shared Supabase auth pool)
   let usersTotal = 0
-  let recentUsers: Array<{ id: string; email: string | undefined; created_at: string }> = []
+  let recentUsers: Array<{ user_id: string; email: string | null; last_seen: string }> = []
   let usersError: string | null = null
   try {
-    const { data: usersData, error: usersErr } = await supabase.auth.admin.listUsers({ page: 1, perPage: 100 })
-    if (usersErr) {
-      usersError = usersErr.message
-    } else if (usersData) {
-      usersTotal = usersData.users.length
-      recentUsers = usersData.users
-        .slice()
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 5)
-        .map((u) => ({ id: u.id, email: u.email, created_at: u.created_at }))
+    const { count, error: countErr } = await supabase
+      .from('planner_users')
+      .select('user_id', { count: 'exact', head: true })
+    if (countErr) {
+      usersError = countErr.message
+    } else {
+      usersTotal = count ?? 0
+    }
+
+    if (!usersError) {
+      const { data: recentData, error: recentErr } = await supabase
+        .from('planner_users')
+        .select('user_id, email, last_seen')
+        .order('last_seen', { ascending: false })
+        .limit(5)
+      if (recentErr) {
+        usersError = recentErr.message
+      } else {
+        recentUsers = (recentData ?? []) as Array<{ user_id: string; email: string | null; last_seen: string }>
+      }
     }
   } catch (e) {
     usersError = e instanceof Error ? e.message : 'Невідома помилка'
@@ -284,26 +294,29 @@ export default async function AdminPage({ searchParams }: Props) {
           </h2>
           {usersError ? (
             <p className="text-ios-footnote text-ios-red">{usersError}</p>
+          ) : usersTotal === 0 ? (
+            <>
+              <div className="text-ios-title1 text-ios-blue">0</div>
+              <div className="text-ios-caption text-ios-label3 mt-0.5">поки що ніхто не залогінився в ai-planner</div>
+            </>
           ) : (
             <>
               <div className="text-ios-title1 text-ios-blue">{usersTotal}</div>
-              <div className="text-ios-caption text-ios-label3 mt-0.5 mb-4">зареєстровано</div>
-              {recentUsers.length === 0 ? (
-                <p className="text-ios-footnote text-ios-label3">Немає користувачів</p>
-              ) : (
-                <div className="divide-y divide-ios-sep">
+              <div className="text-ios-caption text-ios-label3 mt-0.5 mb-4">залогінилось в ai-planner</div>
+              {recentUsers.length > 0 && (
+                <div className="divide-y divide-ios-sep mt-3">
                   {recentUsers.map((u) => (
-                    <div key={u.id} className="flex items-start justify-between gap-2 py-2 last:pb-0">
+                    <div key={u.user_id} className="flex items-start justify-between gap-2 py-2 last:pb-0">
                       <div className="min-w-0">
                         <div className="text-ios-footnote text-ios-label truncate">
                           {u.email ?? '—'}
                         </div>
                         <div className="text-ios-caption text-ios-label3 mt-0.5 font-mono">
-                          {u.id.slice(0, 8)}…
+                          {u.user_id.slice(0, 8)}…
                         </div>
                       </div>
                       <div className="text-ios-caption text-ios-label3 shrink-0 mt-0.5">
-                        {formatDate(u.created_at)}
+                        {formatDate(u.last_seen)}
                       </div>
                     </div>
                   ))}

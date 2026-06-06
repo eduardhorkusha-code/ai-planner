@@ -351,6 +351,47 @@ export default function TaskDetailPage() {
           </div>
         </Section>
 
+        {/* Google Calendar */}
+        <div>
+          <button
+            onClick={() => {
+              // Build start date: use deadline (YYYY-MM-DD) or today
+              const base = deadline
+                ? new Date(deadline + "T09:00:00")
+                : (() => { const d = new Date(); d.setHours(9, 0, 0, 0); return d; })()
+              const end = new Date(base.getTime() + estimateMin * 60 * 1000)
+
+              // Format date components into YYYYMMDDTHHMMSS (local time)
+              function pad(n: number) { return String(n).padStart(2, "0") }
+              function fmt(d: Date) {
+                return (
+                  String(d.getFullYear()) +
+                  pad(d.getMonth() + 1) +
+                  pad(d.getDate()) +
+                  "T" +
+                  pad(d.getHours()) +
+                  pad(d.getMinutes()) +
+                  pad(d.getSeconds())
+                )
+              }
+
+              const priorityLabel = priority === "must" ? "обов\'язково" : "за бажанням"
+              const details = "AI Planner · пріоритет: " + priorityLabel + ", ~" + estimateMin + " хв"
+              const url =
+                "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+                "&text=" + encodeURIComponent(title || "Задача") +
+                "&dates=" + fmt(base) + "/" + fmt(end) +
+                "&details=" + encodeURIComponent(details)
+
+              window.open(url, "_blank")
+            }}
+            className="w-full min-h-[50px] rounded-2xl bg-ios-gray3 flex items-center justify-center gap-2 text-ios-headline font-medium text-ios-label active:scale-[0.97] transition-all duration-150"
+          >
+            <span aria-hidden="true">📅</span>
+            Додати в Google Calendar
+          </button>
+        </div>
+
         {/* Status */}
         <Section label="Статус">
           <div className="flex items-center gap-2 text-ios-label2 mb-1 px-1">

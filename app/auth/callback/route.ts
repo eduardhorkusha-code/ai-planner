@@ -32,7 +32,29 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data: sessionData } = await supabase.auth.exchangeCodeForSession(code)
+
+    // Track this user in planner_users (ai-planner specific — not the shared auth pool)
+    try {
+      const user = sessionData?.user ?? (await supabase.auth.getUser()).data.user
+      if (user) {
+        const { getAdminSupabase } = await import('@/lib/supabase/admin')
+        const admin = getAdminSupabase()
+        if (admin) {
+          await admin.from('planner_users').upsert(
+            {
+              user_id: user.id,
+              email: user.email ?? null,
+              last_seen: new Date().toISOString(),
+            },
+            { onConflict: 'user_id', ignoreDuplicates: false },
+          )
+          // first_seen is set by DB default on insert; upsert leaves it untouched on conflict
+        }
+      }
+    } catch {
+      // Gracefully ignore — never block the redirect over analytics
+    }
 
     return NextResponse.redirect(new URL('/capture', url.origin))
   } catch {

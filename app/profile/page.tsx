@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { getBrowserSupabase } from "@/lib/supabase/browser"
 import { getTasks } from "@/lib/store"
+import { getWorkdayHours, setWorkdayMinutes } from "@/lib/settings"
 import type { Task } from "@/lib/types"
 
 // ── SVG icons ────────────────────────────────────────────────────────────────
@@ -188,6 +189,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [tasks, setTasks] = useState<Task[]>([])
   const [signingOut, setSigningOut] = useState(false)
+  const [workdayHours, setWorkdayHours] = useState(8)
 
   // Load auth + tasks on mount (client only)
   useEffect(() => {
@@ -208,6 +210,7 @@ export default function ProfilePage() {
       setLoading(false)
     }
     setTasks(getTasks())
+    setWorkdayHours(getWorkdayHours())
   }, [])
 
   const handleSignOut = async () => {
@@ -363,6 +366,50 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* ── Workday settings ──────────────────────── */}
+        <div className="bg-ios-bg2 rounded-2xl px-5 py-4 mb-4">
+          <p className="text-ios-title3 text-ios-label mb-3">Робочий день</p>
+          <div className="flex items-center justify-between min-h-[44px]">
+            <div className="flex flex-col gap-0.5">
+              <p className="text-ios-body text-ios-label">Тривалість дня</p>
+              <p className="text-ios-footnote text-ios-label3">Впливає на реалістичність плану</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  const next = Math.max(4, workdayHours - 1)
+                  setWorkdayHours(next)
+                  setWorkdayMinutes(next * 60)
+                }}
+                className="w-8 h-8 rounded-full bg-ios-gray3 flex items-center justify-center active:scale-[0.97] transition-transform"
+                aria-label="Зменшити"
+                disabled={workdayHours <= 4}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <path d="M3 7H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+              <span className="text-ios-headline font-semibold text-ios-label w-10 text-center" style={{ fontVariantNumeric: "tabular-nums" }}>
+                {workdayHours} год
+              </span>
+              <button
+                onClick={() => {
+                  const next = Math.min(14, workdayHours + 1)
+                  setWorkdayHours(next)
+                  setWorkdayMinutes(next * 60)
+                }}
+                className="w-8 h-8 rounded-full bg-ios-gray3 flex items-center justify-center active:scale-[0.97] transition-transform"
+                aria-label="Збільшити"
+                disabled={workdayHours >= 14}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <path d="M7 3V11M3 7H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* ── History row ────────────────────────────── */}
