@@ -77,7 +77,7 @@
     <div class="logo reveal in">
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h11M4 12h16M4 18h8" stroke="#0A84FF" stroke-width="2.4" stroke-linecap="round"/></svg>
     </div>
-    <div class="badge reveal in"><span class="dot"></span>1 день · 1 фінал · 1 перемога</div>
+    <div class="badge reveal in"><span class="dot"></span>~3,5 години · 1 фінал · 1 перемога</div>
     <h1 class="reveal in">Як ми зібрали <span class="grad">AI-Planner</span><br>за день — і перемогли 🏆</h1>
     <p class="lead reveal in">Не один кодер. <b style="color:#fff">AI-команда</b> з десятків спеціалізованих агентів, що працювали хвилями паралельно — під керівництвом одного PM-оркестратора.</p>
     <div class="scrollhint">↓ гортай</div>
@@ -91,6 +91,19 @@
     <div class="cards two">
       <div class="card reveal"><h3>🎯 Принцип</h3><p>Живий URL з першої години. Один сценарій доведений до кінця. Тест на реальному телефоні.</p></div>
       <div class="card reveal"><h3>⚙️ Метод</h3><p>Замість «писати код» — приймати продуктові рішення й делегувати хвилям агентів, кожен у своєму ізольованому модулі.</p></div>
+    </div>
+  </section>
+
+  <!-- 2.5 PREPARATION -->
+  <section>
+    <div class="kicker reveal">Чому це було можливо · Підготовка</div>
+    <h2 class="reveal">Швидкість починається ДО першого рядка коду</h2>
+    <p class="lead reveal">Бурст не був хаосом — під ним лежала підготовка, зроблена заздалегідь:</p>
+    <div class="cards two">
+      <div class="card reveal"><h3>🚀 Phase 0: живий URL першим</h3><p>Порожній застосунок задеплоєно на Vercel ще до фіч. GitHub→Vercel auto-deploy, env-ключі, репо — усе готове на старті.</p></div>
+      <div class="card reveal"><h3>🦸 AI-команда сконфігурована наперед</h3><p>Ролі, кодові імена, флоу PM→Dev→Reviewer→QA, правила маршрутизації — описані ДО спринту. Оркестрація була готова до запуску.</p></div>
+      <div class="card reveal"><h3>📝 Слова перед кодом</h3><p>Спека, модель даних (тип Task), план 3 екранів — продумані на буткемпі. Продукт спроєктовано до того, як почали будувати.</p></div>
+      <div class="card reveal"><h3>🧰 Інструменти й гейти напоготові</h3><p>Воркфлоу-оркестрація, code-review, design-review, стабільний тег — патерни готові, а не імпровізація під час бурсту.</p></div>
     </div>
   </section>
 
@@ -110,6 +123,21 @@
       <div class="stat reveal"><div class="num b-red" data-to="4">0</div><div class="lab">інциденти впіймано й пофіксено до демо</div></div>
     </div>
     <p class="lead reveal" style="margin-top:24px">3 AI-моделі в продукті: <b style="color:#fff">Claude Haiku</b> · <b style="color:#fff">Claude Sonnet</b> · <b style="color:#fff">Grok</b> — з graceful-fallback між ними.</p>
+  </section>
+
+  <!-- 3.5 TIMING -->
+  <section>
+    <div class="kicker reveal">Найцікавіше: таймінг</div>
+    <h2 class="reveal">Не день — <span class="grad">~3,5 години</span></h2>
+    <p class="lead reveal">Видно по комітах у гіті: від порожнього Next.js-застосунку (15:17) до фіча-повного переможця (18:53) — один концентрований вечірній бурст.</p>
+    <div class="tl">
+      <div class="row reveal"><div class="w">15:17</div><div class="t">Старт — порожній застосунок<span>create-next-app, перший деплой на Vercel</span></div></div>
+      <div class="row reveal"><div class="w">15:32</div><div class="t">Робочий MVP — за 15 хвилин<span>Capture → AI-парсинг → Inbox → Today, наскрізь</span></div></div>
+      <div class="row reveal"><div class="w">16:01</div><div class="t">Інцидент U+2028 розрулено<span>root cause + фікс mid-sprint за ~23 хв, демо не зламано</span></div></div>
+      <div class="row reveal"><div class="w">16:37</div><div class="t">Старт 9 фіч-хвиль</div></div>
+      <div class="row reveal"><div class="w">18:21</div><div class="t">Усі 9 хвиль готові — за 1 год 44 хв<span>нова фіча на проді в середньому кожні ~11 хвилин</span></div></div>
+      <div class="row reveal"><div class="w">18:53</div><div class="t">Останній штрих · 🏆 переможець</div></div>
+    </div>
   </section>
 
   <!-- 4. THE METHOD -->
@@ -187,13 +215,26 @@
     <p class="lead reveal" style="margin-top:22px">Кожна хвиля — це Dev × N паралельно → Reviewer → QA → деплой. Конвеєр, а не кодинг наосліп.</p>
   </section>
 
+  <!-- 8.5 LESSONS -->
+  <section>
+    <div class="kicker reveal">Уроки на майбутнє</div>
+    <h2 class="reveal">Що зробити ще краще</h2>
+    <div class="cards two">
+      <div class="card reveal"><h3>🔤 Кирилиця в коді — крихка</h3><p>Тричі ловили: U+2028 у ключі, JSX-escape, латинська «c» у «січ». Урок: авто-лінт на unicode-escape у JSX + скан латинських двійників — не покладатись на око reviewer'а.</p></div>
+      <div class="card reveal"><h3>👥 1 файл = 1 власник (суворіше)</h3><p>Два агенти переписали консьєрж → лишилась заглушка. Урок: жорсткі межі файлів або worktree-ізоляція для ризикових перетинів.</p></div>
+      <div class="card reveal"><h3>🌊 Хвилі — секвенс, не накладати</h3><p>Дві хвилі на спільному дереві труять QA одна одної. Урок: ізольовані worktree на хвилю, якщо паралелити воркфлоу.</p></div>
+      <div class="card reveal"><h3>📊 App-specific дані з дня 1</h3><p>Спільний Supabase дав 94 «чужих» юзери в адмінці. Урок: трекати своїх користувачів окремо одразу, не довіряти спільному пулу.</p></div>
+    </div>
+    <p class="lead reveal" style="margin-top:20px">Що спрацювало й лишається: <b style="color:#fff">deploy-first + стабільний тег</b> (0 зламаних демо) · <b style="color:#fff">1 агент = 1 модуль</b> · гейти <b style="color:#fff">Reviewer+QA</b> ловили те, що tsc/build пропускали.</p>
+  </section>
+
   <!-- 9. WIN -->
   <section class="win">
     <div class="conf reveal in">🏆🎉</div>
     <h1 class="reveal in"><span class="grad">МИ ПЕРЕМОГЛИ</span></h1>
     <p class="lead reveal in">Повноцінний AI-планер з воронкою, адмінкою, консьєржем, iOS-дизайном і трьома AI-моделями — зібраний за день AI-командою. Доведений до кінця. Задеплоєний. Переможець.</p>
     <a class="cta reveal in" href="https://ai-planner-swart.vercel.app" target="_blank">Відкрити AI-Planner →</a>
-    <p class="foot reveal in">Зібрано з <b style="color:#fff">Claude Code</b> · оркестрація хвилями паралельних агентів<br>~1.95M токенів · 69 агентів · 10 хвиль · 1 день · 1 перемога</p>
+    <p class="foot reveal in">Зібрано з <b style="color:#fff">Claude Code</b> · оркестрація хвилями паралельних агентів<br>~1.95M токенів · 69 агентів · 10 хвиль · ~3,5 години · 1 перемога</p>
   </section>
 
 </div>
