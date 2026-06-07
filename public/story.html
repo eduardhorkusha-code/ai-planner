@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Як ми зібрали AI-Planner за день — і перемогли</title>
+<style>
+  :root{
+    --bg:#000; --bg2:#1C1C1E; --bg3:#2C2C2E;
+    --blue:#0A84FF; --green:#30D158; --red:#FF453A; --orange:#FF9F0A; --indigo:#5E5CE6;
+    --label:#fff; --label2:rgba(235,235,245,.62); --label3:rgba(235,235,245,.32);
+    --sep:rgba(84,84,88,.6);
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--label);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .deck{scroll-snap-type:y proximity}
+  section{min-height:100svh;padding:72px 24px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;scroll-snap-align:start;position:relative;max-width:1000px;margin:0 auto}
+  h1{font-size:clamp(34px,8vw,72px);font-weight:800;letter-spacing:-.03em;line-height:1.02}
+  h2{font-size:clamp(26px,5vw,44px);font-weight:800;letter-spacing:-.02em;line-height:1.08;margin-bottom:14px}
+  .kicker{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:18px}
+  p.lead{font-size:clamp(16px,2.4vw,21px);color:var(--label2);line-height:1.5;max-width:640px;margin:14px auto 0}
+  .grad{background:linear-gradient(120deg,#0A84FF,#5E5CE6 55%,#30D158);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .badge{display:inline-flex;gap:8px;align-items:center;background:var(--bg2);border:1px solid var(--sep);border-radius:999px;padding:9px 16px;font-size:14px;color:var(--label2);font-weight:600;margin-bottom:26px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+  .logo{width:88px;height:88px;border-radius:22px;background:var(--bg2);border:1px solid var(--sep);display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+  .logo svg{width:44px;height:44px}
+  /* stats grid */
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:760px;margin-top:30px}
+  @media(min-width:680px){.stats{grid-template-columns:repeat(3,1fr)}}
+  .stat{background:var(--bg2);border:1px solid var(--sep);border-radius:20px;padding:22px 16px;text-align:left}
+  .stat .num{font-size:clamp(30px,6vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1}
+  .stat .lab{font-size:13px;color:var(--label2);margin-top:8px;font-weight:600;line-height:1.3}
+  .b-blue{color:var(--blue)} .b-green{color:var(--green)} .b-ind{color:var(--indigo)} .b-orange{color:var(--orange)} .b-red{color:var(--red)}
+  /* cards */
+  .cards{display:grid;grid-template-columns:1fr;gap:12px;width:100%;max-width:760px;margin-top:26px;text-align:left}
+  @media(min-width:680px){.cards.two{grid-template-columns:1fr 1fr}}
+  .card{background:var(--bg2);border:1px solid var(--sep);border-radius:18px;padding:18px 20px}
+  .card h3{font-size:17px;font-weight:700;margin-bottom:6px;display:flex;gap:9px;align-items:center}
+  .card p{font-size:14.5px;color:var(--label2);line-height:1.45}
+  .card .tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-left:auto}
+  .tag.fixed{background:rgba(48,209,88,.15);color:var(--green)}
+  /* timeline */
+  .tl{width:100%;max-width:720px;margin-top:24px;text-align:left;position:relative}
+  .tl .row{display:flex;gap:16px;padding:13px 0;border-bottom:1px solid var(--sep)}
+  .tl .w{flex:0 0 78px;font-weight:800;color:var(--blue);font-size:15px}
+  .tl .t{font-size:15px;color:var(--label);font-weight:600}
+  .tl .t span{display:block;color:var(--label2);font-weight:400;font-size:13.5px;margin-top:3px}
+  /* feature grid */
+  .feat{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:780px;margin-top:24px;text-align:left}
+  @media(min-width:680px){.feat{grid-template-columns:repeat(3,1fr)}}
+  .feat div{background:var(--bg2);border:1px solid var(--sep);border-radius:14px;padding:14px;font-size:14px;font-weight:600;color:var(--label2)}
+  .feat div b{display:block;color:var(--label);font-weight:700;margin-bottom:3px;font-size:14.5px}
+  .team{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:780px;margin-top:24px;text-align:left}
+  @media(min-width:680px){.team{grid-template-columns:repeat(3,1fr)}}
+  .team div{background:var(--bg2);border:1px solid var(--sep);border-radius:14px;padding:13px 15px}
+  .team b{font-size:14.5px} .team span{display:block;color:var(--label2);font-size:12.5px;margin-top:2px}
+  .cta{display:inline-flex;align-items:center;gap:9px;background:var(--blue);color:#fff;font-weight:700;font-size:17px;padding:15px 30px;border-radius:14px;text-decoration:none;margin-top:30px;box-shadow:0 8px 40px rgba(10,132,255,.4)}
+  .scrollhint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:var(--label3);font-size:13px;animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  .win h1{font-size:clamp(44px,11vw,110px)}
+  .conf{font-size:clamp(40px,9vw,80px);margin-bottom:10px}
+  .foot{font-size:13px;color:var(--label3);margin-top:40px;line-height:1.6}
+  a.link{color:var(--blue);text-decoration:none}
+  .progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:99}
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="deck">
+
+  <!-- 1. HERO -->
+  <section>
+    <div class="logo reveal in">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h11M4 12h16M4 18h8" stroke="#0A84FF" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </div>
+    <div class="badge reveal in"><span class="dot"></span>1 день · 1 фінал · 1 перемога</div>
+    <h1 class="reveal in">Як ми зібрали <span class="grad">AI-Planner</span><br>за день — і перемогли 🏆</h1>
+    <p class="lead reveal in">Не один кодер. <b style="color:#fff">AI-команда</b> з десятків спеціалізованих агентів, що працювали хвилями паралельно — під керівництвом одного PM-оркестратора.</p>
+    <div class="scrollhint">↓ гортай</div>
+  </section>
+
+  <!-- 2. CHALLENGE -->
+  <section>
+    <div class="kicker reveal">Виклик</div>
+    <h2 class="reveal">Хакатон. Один день.<br>Mobile-first AI-планер дня.</h2>
+    <p class="lead reveal">«Todoist, що сам себе планує»: кидаєш потік думок голосом чи текстом — AI перетворює хаос на реалістичний план. Вимоги: реально працює, задеплоєно на Vercel, є AI-серце, mobile-first.</p>
+    <div class="cards two">
+      <div class="card reveal"><h3>🎯 Принцип</h3><p>Живий URL з першої години. Один сценарій доведений до кінця. Тест на реальному телефоні.</p></div>
+      <div class="card reveal"><h3>⚙️ Метод</h3><p>Замість «писати код» — приймати продуктові рішення й делегувати хвилям агентів, кожен у своєму ізольованому модулі.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. THE NUMBERS -->
+  <section>
+    <div class="kicker reveal">Цифри, що варто показати</div>
+    <h2 class="reveal">Масштаб одного дня</h2>
+    <div class="stats">
+      <div class="stat reveal"><div class="num b-blue" data-to="1950000" data-suffix="" data-fmt="m">0</div><div class="lab">токенів роботи спеціалізованих субагентів</div></div>
+      <div class="stat reveal"><div class="num b-ind" data-to="69">0</div><div class="lab">AI-агентів залучено</div></div>
+      <div class="stat reveal"><div class="num b-green" data-to="10">0</div><div class="lab">хвиль-воркфлоу (оркестрацій)</div></div>
+      <div class="stat reveal"><div class="num b-blue" data-to="820" data-suffix="+">0</div><div class="lab">викликів інструментів агентами</div></div>
+      <div class="stat reveal"><div class="num b-orange" data-to="6">0</div><div class="lab">агентів працювали ОДНОЧАСНО (пік)</div></div>
+      <div class="stat reveal"><div class="num b-ind" data-to="20" data-suffix="+">0</div><div class="lab">деплоїв на прод</div></div>
+      <div class="stat reveal"><div class="num b-green" data-to="18">0</div><div class="lab">комітів у main</div></div>
+      <div class="stat reveal"><div class="num b-blue" data-to="14">0</div><div class="lab">роутів / екранів</div></div>
+      <div class="stat reveal"><div class="num b-red" data-to="4">0</div><div class="lab">інциденти впіймано й пофіксено до демо</div></div>
+    </div>
+    <p class="lead reveal" style="margin-top:24px">3 AI-моделі в продукті: <b style="color:#fff">Claude Haiku</b> · <b style="color:#fff">Claude Sonnet</b> · <b style="color:#fff">Grok</b> — з graceful-fallback між ними.</p>
+  </section>
+
+  <!-- 4. THE METHOD -->
+  <section>
+    <div class="kicker reveal">Як це працювало</div>
+    <h2 class="reveal">PM-оркестратор + хвилі агентів</h2>
+    <p class="lead reveal">Головне правило, що зробило паралельність можливою:</p>
+    <div class="cards">
+      <div class="card reveal"><h3>1 агент = 1 модуль</h3><p>Кожна фіча — окремий роут/файл. Агенти ніколи не б’ються, бо володіють непересічними файлами. «Оболонку» (layout/нав/токени) тримає рівно один агент на хвилю.</p></div>
+      <div class="card reveal"><h3>Гейти якості в кожній хвилі</h3><p>Dev → Reviewer → QA усередині кожного воркфлоу. Reviewer і QA впіймали баги, які tsc і build пропускали (рендер, колізії, латинські двійники).</p></div>
+      <div class="card reveal"><h3>Страхувальний трос</h3><p>Тег <code style="color:#0A84FF">stable-core-green</code> після кожної зеленої хвилі — відкат на робочу версію за 20 секунд. Демо ніколи не було під загрозою.</p></div>
+    </div>
+  </section>
+
+  <!-- 5. TIMELINE -->
+  <section>
+    <div class="kicker reveal">Хроніка</div>
+    <h2 class="reveal">9 хвиль до перемоги</h2>
+    <div class="tl">
+      <div class="row reveal"><div class="w">MVP</div><div class="t">Capture → AI-парсинг → Inbox → Today<span>живий URL, базовий наскрізний сценарій</span></div></div>
+      <div class="row reveal"><div class="w">Хвиля 1</div><div class="t">Стабілізація<span>JSON-guard від падінь + mobile P0/P1 (viewport, sticky CTA, тач-зони, реалістичність плану)</span></div></div>
+      <div class="row reveal"><div class="w">Хвиля 2</div><div class="t">Лендінг + воронка + демо-режим + Google-логін + адмінка<span>Supabase, збір даних про користувачів</span></div></div>
+      <div class="row reveal"><div class="w">Хвиля 3</div><div class="t">iOS-нативний дизайн<span>SF-шрифт, iOS-палітра, SVG-іконки, blur-навігація — по спеці-блюпринту</span></div></div>
+      <div class="row reveal"><div class="w">Хвиля 4</div><div class="t">Наповнення<span>5 табів, Week, Профіль+аналітика, вибір моделі, фільтри, перенос дня</span></div></div>
+      <div class="row reveal"><div class="w">Хвиля 5</div><div class="t">Нові модулі<span>редагування задачі, історія, енергопланування</span></div></div>
+      <div class="row reveal"><div class="w">Хвиля 6</div><div class="t">Аналітика юзерів + Week-полір + помітна реалістичність</div></div>
+      <div class="row reveal"><div class="w">Хвиля 7</div><div class="t">Навігація тижнів + бари навантаження + повторювані таски</div></div>
+      <div class="row reveal"><div class="w">Хвиля 8</div><div class="t">AI-консьєрж + Grok + пікер дня + анімований лендінг</div></div>
+      <div class="row reveal"><div class="w">Хвиля 9</div><div class="t">Реальні юзери в адмінці + налаштовуваний день + Google Calendar</div></div>
+    </div>
+  </section>
+
+  <!-- 6. WAR STORIES -->
+  <section>
+    <div class="kicker reveal">Драма (і чому процес витримав)</div>
+    <h2 class="reveal">4 інциденти, 0 зламаних демо</h2>
+    <div class="cards two">
+      <div class="card reveal"><h3>👻 Невидимий U+2028 <span class="tag fixed">fixed</span></h3><p>Символ-привид у API-ключі ламав виклик AI «ByteString header crash». Знайшли root cause, зачистили ключ у коді — назавжди.</p></div>
+      <div class="card reveal"><h3>🔤 JSX-escape <span class="tag fixed">fixed</span></h3><p>Агент записав кирилицю як <code>Щ</code> у JSX — рендерилось як сміття на головному екрані. Reviewer спіймав, виправили.</p></div>
+      <div class="card reveal"><h3>🅰️ Латинська «с» <span class="tag fixed">fixed</span></h3><p>«січ» → «cі» (латинська c замість кириличної). Тонка підміна, яку tsc пропускає — reviewer ні.</p></div>
+      <div class="card reveal"><h3>👥 Колізія запису <span class="tag fixed">fixed</span></h3><p>Два агенти переписали один файл → лишилась заглушка консьєржа. Виявили, відновили повну реалізацію.</p></div>
+    </div>
+    <p class="lead reveal" style="margin-top:22px">Жоден інцидент не дійшов до прода в демо — гейти Reviewer/QA + стабільний тег зробили процес куленепробивним.</p>
+  </section>
+
+  <!-- 7. PRODUCT -->
+  <section>
+    <div class="kicker reveal">Що поїхало на прод</div>
+    <h2 class="reveal">Повноцінний продукт</h2>
+    <div class="feat">
+      <div class="reveal"><b>Capture</b>текст + 🎙️ голос + вибір AI-моделі</div>
+      <div class="reveal"><b>AI-парсинг</b>хаос → задачі з пріоритетом і часом</div>
+      <div class="reveal"><b>Today</b>чекліст, прогрес, реалістичність плану</div>
+      <div class="reveal"><b>Week</b>навігація, бари навантаження, пікер дня</div>
+      <div class="reveal"><b>AI-консьєрж</b>самарі дня + рекомендації пріоритетів</div>
+      <div class="reveal"><b>Воронка + Адмінка</b>збір даних, аналітика, реальні юзери</div>
+      <div class="reveal"><b>Профіль</b>аналітика, преміум, налаштування дня</div>
+      <div class="reveal"><b>Повторювані + GCal</b>repeat-задачі, експорт у календар</div>
+      <div class="reveal"><b>Google-логін</b>демо-режим без реєстрації</div>
+    </div>
+  </section>
+
+  <!-- 8. TEAM -->
+  <section>
+    <div class="kicker reveal">Команда (так, у них є кодові імена)</div>
+    <h2 class="reveal">SKELAR AI Team</h2>
+    <div class="team">
+      <div class="reveal"><b>🦸 PM — Nick Fury</b><span>декомпозиція, оркестрація, синтез</span></div>
+      <div class="reveal"><b>🛠 Dev — Tony Stark</b><span>фічі, фікси, рефактори</span></div>
+      <div class="reveal"><b>🎨 Designer — Da Vinci</b><span>iOS-дизайн, проти AI-слопу</span></div>
+      <div class="reveal"><b>🕵️ Reviewer — Alfred</b><span>код-рев’ю кожного diff</span></div>
+      <div class="reveal"><b>🕷 QA — Spider-Man</b><span>tsc + build + регресії</span></div>
+      <div class="reveal"><b>⚡ On-call — The Flash</b><span>інциденти на проді</span></div>
+    </div>
+    <p class="lead reveal" style="margin-top:22px">Кожна хвиля — це Dev × N паралельно → Reviewer → QA → деплой. Конвеєр, а не кодинг наосліп.</p>
+  </section>
+
+  <!-- 9. WIN -->
+  <section class="win">
+    <div class="conf reveal in">🏆🎉</div>
+    <h1 class="reveal in"><span class="grad">МИ ПЕРЕМОГЛИ</span></h1>
+    <p class="lead reveal in">Повноцінний AI-планер з воронкою, адмінкою, консьєржем, iOS-дизайном і трьома AI-моделями — зібраний за день AI-командою. Доведений до кінця. Задеплоєний. Переможець.</p>
+    <a class="cta reveal in" href="https://ai-planner-swart.vercel.app" target="_blank">Відкрити AI-Planner →</a>
+    <p class="foot reveal in">Зібрано з <b style="color:#fff">Claude Code</b> · оркестрація хвилями паралельних агентів<br>~1.95M токенів · 69 агентів · 10 хвиль · 1 день · 1 перемога</p>
+  </section>
+
+</div>
+<script>
+  // scroll progress
+  const prog=document.getElementById('prog');
+  addEventListener('scroll',()=>{const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;prog.style.width=p+'%';},{passive:true});
+  // reveal on view
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');if(e.target.classList.contains('num'))countUp(e.target);io.unobserve(e.target);}})},{threshold:.2});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  document.querySelectorAll('.num').forEach(el=>io.observe(el));
+  // count-up
+  function countUp(el){
+    const to=+el.dataset.to, fmt=el.dataset.fmt, suf=el.dataset.suffix||'';
+    const dur=1400, t0=performance.now();
+    function fmtNum(v){
+      if(fmt==='m') return (v/1000000).toFixed(2).replace(/\.?0+$/,'')+'M';
+      return Math.round(v).toLocaleString('uk-UA');
+    }
+    function step(t){
+      let p=Math.min(1,(t-t0)/dur); p=1-Math.pow(1-p,3);
+      el.textContent=fmtNum(to*p)+suf;
+      if(p<1)requestAnimationFrame(step); else el.textContent=fmtNum(to)+suf;
+    }
+    requestAnimationFrame(step);
+  }
+</script>
+</body>
+</html>
